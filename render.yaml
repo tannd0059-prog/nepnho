@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: nepnho-d2c
+    env: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app1:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9

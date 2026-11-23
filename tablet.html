@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Nếp Nhỏ — Tablet Interface (Giao diện Máy Tính Bảng 768px-1024px)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        
+:root {
+    --bg-paper: #F7F4EE;
+    --sage-green: #7D9D7C;
+    --sage-dark: #658464;
+    --earth-brown: #8A6F5A;
+    --warm-accent: #E88D67;
+    --text-dark: #2B2B2B;
+    --text-muted: #6B7280;
+    --card-bg: #FFFFFF;
+}
+* { box-sizing: border-box; }
+body {
+    background-color: var(--bg-paper);
+    color: var(--text-dark);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.text-sage { color: var(--sage-green) !important; }
+.bg-sage { background-color: var(--sage-green) !important; color: white !important; }
+.btn-sage { background-color: var(--sage-green); color: white; border: none; font-weight: 600; border-radius: 8px; transition: 0.2s; }
+.btn-sage:hover { background-color: var(--sage-dark); color: white; }
+.price-tag { color: var(--warm-accent); font-weight: 700; }
+.badge-atp { background-color: #E8F5E9; color: #2E7D32; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+.badge-cat { background-color: #F1ECE1; color: var(--earth-brown); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+
+        /* TABLET OPTIMIZED CONTAINER */
+        body { max-width: 900px; margin: 0 auto; background: #FAF8F5; }
+        .tablet-header { background: #FFFFFF; padding: 14px 20px; border-bottom: 2px solid var(--sage-green); position: sticky; top: 0; z-index: 100; }
+        .tablet-brand { font-weight: 800; font-size: 1.4rem; color: var(--earth-brown); text-decoration: none; }
+        
+        /* TOUCH SCROLLABLE PILLS */
+        .tablet-pills-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 20px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; scrollbar-width: none; }
+        .tablet-pills-bar::-webkit-scrollbar { display: none; }
+        .tab-pill { white-space: nowrap; border: 1px solid #E2E8F0; background: #F8FAFC; padding: 8px 16px; border-radius: 20px; font-size: 0.84rem; font-weight: 600; color: #475569; cursor: pointer; transition: 0.2s; }
+        .tab-pill.active { background: var(--sage-green); color: #FFF; border-color: var(--sage-green); }
+
+        /* HERO TABLET */
+        .tablet-hero { background: linear-gradient(135deg, #EFE7DA, #E3D6C1); border-radius: 16px; padding: 24px; margin: 16px 20px; }
+        
+        /* 3 COLUMNS GRID TABLET */
+        .tablet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px 80px; }
+        @media (max-width: 768px) {
+            .tablet-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .tablet-card { background: #FFFFFF; border-radius: 14px; border: 1px solid #E2E8F0; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 3px 10px rgba(0,0,0,0.03); }
+        .tablet-img-wrap { position: relative; height: 180px; background: #F1ECE1; }
+        .tablet-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .badge-discount { position: absolute; top: 8px; left: 8px; background: #EF4444; color: #FFF; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+        .touch-before-after { position: absolute; bottom: 6px; left: 6px; right: 6px; display: flex; gap: 4px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border-radius: 6px; padding: 2px; }
+        .touch-btn { flex: 1; border: none; background: transparent; color: #FFF; font-size: 0.65rem; font-weight: 600; padding: 4px 0; border-radius: 4px; }
+        .touch-btn.active { background: #FFF; color: #1E293B; }
+        .tablet-card-body { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
+        .tablet-title { font-size: 0.85rem; font-weight: 700; color: #1E293B; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.6em; }
+        .price-val { font-size: 1.05rem; font-weight: 800; color: var(--warm-accent); }
+        .price-old { font-size: 0.72rem; color: #94A3B8; text-decoration: line-through; }
+
+        /* FLOATING TABLET BOTTOM BAR */
+        .tablet-bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; max-width: 900px; margin: 0 auto; background: #FFFFFF; border-top: 1px solid #CBD5E1; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 16px rgba(0,0,0,0.05); z-index: 100; }
+        .device-indicator { position: fixed; top: 70px; right: 20px; background: #1E293B; color: #FFF; padding: 6px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; z-index: 999; }
+    </style>
+</head>
+<body>
+
+    <div class="device-indicator">📱 Giao diện Tablet (iPad 768px-1024px)</div>
+
+    <!-- TABLET HEADER -->
+    <header class="tablet-header d-flex justify-content-between align-items-center">
+        <a href="tablet.html" class="tablet-brand">🌿 NẾP NHỎ</a>
+        <div class="d-flex align-items-center gap-2 flex-grow-1 mx-3" style="max-width: 380px;">
+            <input type="text" id="tabletSearch" class="form-control rounded-pill form-control-sm px-3" placeholder="🔍 Tìm kiếm sản phẩm..." onkeyup="filterTabletSearch()">
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light text-dark border p-2" style="font-size: 0.75rem;">📍 Q.5</span>
+            <button class="btn btn-outline-dark btn-sm rounded-pill px-3" onclick="alert('Giỏ hàng có 1 sản phẩm')">🛒 (1)</button>
+        </div>
+    </header>
+
+    <!-- HORIZONTAL SCROLLABLE PILLS -->
+    <div class="tablet-pills-bar">
+        <button class="tab-pill active" onclick="filterTabletCat('all', this)">Tất cả</button><button class="tab-pill" onclick="filterTabletCat('Bàn học & Làm việc', this)">Bàn học & Làm việc</button><button class="tab-pill" onclick="filterTabletCat('Combo Tiết kiệm', this)">Combo Tiết kiệm</button><button class="tab-pill" onclick="filterTabletCat('Góc phòng gọn gàng', this)">Góc phòng gọn gàng</button><button class="tab-pill" onclick="filterTabletCat('Làm đẹp & Bàn trang điểm', this)">Làm đẹp & Bàn trang điểm</button><button class="tab-pill" onclick="filterTabletCat('Phòng ngủ & Trọ', this)">Phòng ngủ & Trọ</button><button class="tab-pill" onclick="filterTabletCat('Tủ quần áo', this)">Tủ quần áo</button><button class="tab-pill" onclick="filterTabletCat('Đời sống & Thư giãn', this)">Đời sống & Thư giãn</button>
+    </div>
+
+    <!-- TABLET HERO -->
+    <div class="tablet-hero d-flex justify-content-between align-items-center">
+        <div>
+            <span class="badge bg-success bg-opacity-75 text-white px-2 py-1 rounded-pill mb-1" style="font-size: 0.7rem;">✨ Giao hàng chuẩn GPS</span>
+            <h2 class="fs-4 fw-bold text-dark m-0">Gọn Một Góc, Nhẹ Cả Ngày</h2>
+            <p class="text-muted fs-7 mt-1 mb-2">Trải nghiệm mua sắm tối ưu cảm ứng mượt mà trên iPad & Tablet.</p>
+            <button class="btn btn-sage btn-sm px-3 py-2 rounded-pill" onclick="alert('Bật GPS thành công')">📍 Bắt GPS giao tận cửa</button>
+        </div>
+        <img src="images/ke_dung_my_pham.png" alt="Hero" style="height: 110px; width: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    </div>
+
+    <!-- TABLET GRID -->
+    <div class="px-3 mb-2 d-flex justify-content-between align-items-center">
+        <span class="fw-bold fs-6 text-dark">Sản Phẩm Khuyên Dùng</span>
+        <span class="fs-7 text-muted">Vuốt để chọn Trước / Sau</span>
+    </div>
+    
+    <div class="tablet-grid" id="tabletGrid">
+        
+        <div class="tablet-card" data-cat="Bàn học & Làm việc" data-name="nếp bàn — desk reset kit">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-17%</span>
+                <img id="tab-img-NN-DESK" src="images/nep_ban.png" alt="Nếp Bàn — Desk Reset Kit" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-DESK', 'images/nep_ban.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-DESK', 'images/nep_ban_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Bàn học & Làm việc</span>
+                <h4 class="tablet-title">Nếp Bàn — Desk Reset Kit</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 42 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">229,000đ</div>
+                        <div class="price-old">279,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Nếp Bàn — Desk Reset Kit vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Tủ quần áo" data-name="nếp tủ — closet reset kit">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-14%</span>
+                <img id="tab-img-NN-CLOSET" src="images/nep_tu.png" alt="Nếp Tủ — Closet Reset Kit" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-CLOSET', 'images/nep_tu.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-CLOSET', 'images/nep_tu_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Tủ quần áo</span>
+                <h4 class="tablet-title">Nếp Tủ — Closet Reset Kit</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 35 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">289,000đ</div>
+                        <div class="price-old">339,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Nếp Tủ — Closet Reset Kit vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Phòng ngủ & Trọ" data-name="nếp trọ — small room starter kit">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-13%</span>
+                <img id="tab-img-NN-ROOM" src="images/nep_tro.png" alt="Nếp Trọ — Small Room Starter Kit" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-ROOM', 'images/nep_tro.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-ROOM', 'images/nep_tro_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Phòng ngủ & Trọ</span>
+                <h4 class="tablet-title">Nếp Trọ — Small Room Starter Kit</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 25 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">399,000đ</div>
+                        <div class="price-old">459,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Nếp Trọ — Small Room Starter Kit vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Combo Tiết kiệm" data-name="combo nếp bàn + nếp tủ (giảm 10%)">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-10%</span>
+                <img id="tab-img-NN-COMBO" src="images/combo_neptro_neptu.png" alt="Combo Nếp Bàn + Nếp Tủ (Giảm 10%)" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-COMBO', 'images/combo_neptro_neptu.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-COMBO', 'images/combo_neptro_neptu_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Combo Tiết kiệm</span>
+                <h4 class="tablet-title">Combo Nếp Bàn + Nếp Tủ (Giảm 10%)</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 19 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">466,000đ</div>
+                        <div class="price-old">518,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Combo Nếp Bàn + Nếp Tủ (Giảm 10%) vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="kệ đựng mỹ phẩm xoay 360° diamond mica đa tầng">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-25%</span>
+                <img id="tab-img-NN-ROTATING-ORGANIZER" src="images/ke_dung_my_pham.png" alt="Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-ROTATING-ORGANIZER', 'images/ke_dung_my_pham.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-ROTATING-ORGANIZER', 'images/ke_dung_my_pham_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Làm đẹp & Bàn trang điểm</span>
+                <h4 class="tablet-title">Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 60 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">149,000đ</div>
+                        <div class="price-old">199,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="gương trang điểm đèn led cảm ứng 3 màu + khay đựng phụ kiện">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-24%</span>
+                <img id="tab-img-NN-LED-MIRROR" src="images/guong_trang_diem_led.png" alt="Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-LED-MIRROR', 'images/guong_trang_diem_led.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-LED-MIRROR', 'images/guong_trang_diem_led_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Làm đẹp & Bàn trang điểm</span>
+                <h4 class="tablet-title">Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 42 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">185,000đ</div>
+                        <div class="price-old">245,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="hộp đựng bông tẩy trang & tăm bông nắp gỗ chống bụi 2 ngăn">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-27%</span>
+                <img id="tab-img-NN-COTTON-BOX" src="images/hop_dung_bong_tay_trang.png" alt="Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-COTTON-BOX', 'images/hop_dung_bong_tay_trang.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-COTTON-BOX', 'images/hop_dung_bong_tay_trang_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Làm đẹp & Bàn trang điểm</span>
+                <h4 class="tablet-title">Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 72 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">69,000đ</div>
+                        <div class="price-old">95,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="khay gương viền mạ vàng trưng bày nước hoa & son phong cách bắc âu">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-23%</span>
+                <img id="tab-img-NN-GOLD-TRAY" src="images/khay_guong.png" alt="Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-GOLD-TRAY', 'images/khay_guong.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-GOLD-TRAY', 'images/khay_guong_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Làm đẹp & Bàn trang điểm</span>
+                <h4 class="tablet-title">Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 34 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">175,000đ</div>
+                        <div class="price-old">230,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="giá treo máy sấy tóc & lược tạo kiểu dán tường (chịu lực 5kg)">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-28%</span>
+                <img id="tab-img-NN-DRYER-HANGER" src="images/gia_treo_may_say.png" alt="Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-DRYER-HANGER', 'images/gia_treo_may_say.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-DRYER-HANGER', 'images/gia_treo_may_say_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Làm đẹp & Bàn trang điểm</span>
+                <h4 class="tablet-title">Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 53 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">79,000đ</div>
+                        <div class="price-old">110,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg) vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Góc phòng gọn gàng" data-name="hộp đựng quần áo khung thép xếp chồng cửa trong suốt (66l)">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-23%</span>
+                <img id="tab-img-NN-STEEL-BOX" src="images/hop_khung_quan_ao.png" alt="Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-STEEL-BOX', 'images/hop_khung_quan_ao.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-STEEL-BOX', 'images/hop_khung_quan_ao_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Góc phòng gọn gàng</span>
+                <h4 class="tablet-title">Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 46 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">129,000đ</div>
+                        <div class="price-old">169,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L) vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Góc phòng gọn gàng" data-name="set 3 hộp vải chia ngăn đựng đồ lót, tất & khăn lụa">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-28%</span>
+                <img id="tab-img-NN-DIVIDER-BOX" src="images/set_hop_3_ngan.png" alt="Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-DIVIDER-BOX', 'images/set_hop_3_ngan.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-DIVIDER-BOX', 'images/set_hop_3_ngan_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Góc phòng gọn gàng</span>
+                <h4 class="tablet-title">Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 65 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">89,000đ</div>
+                        <div class="price-old">125,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Góc phòng gọn gàng" data-name="kệ để giày dép gấp gọn chữ x 5 tầng tiết kiệm không gian">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-28%</span>
+                <img id="tab-img-NN-SHOE-RACK" src="images/ke_de_giay.png" alt="Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-SHOE-RACK', 'images/ke_de_giay.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-SHOE-RACK', 'images/ke_de_giay_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Góc phòng gọn gàng</span>
+                <h4 class="tablet-title">Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 37 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">99,000đ</div>
+                        <div class="price-old">139,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Góc phòng gọn gàng" data-name="hộp quản lý ổ cắm & giấu dây cáp điện nắp gỗ chống cháy">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-25%</span>
+                <img id="tab-img-NN-CABLE-BOX" src="images/hop_dung_day.png" alt="Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-CABLE-BOX', 'images/hop_dung_day.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-CABLE-BOX', 'images/hop_dung_day_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Góc phòng gọn gàng</span>
+                <h4 class="tablet-title">Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 58 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">115,000đ</div>
+                        <div class="price-old">155,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Đời sống & Thư giãn" data-name="máy xông tinh dầu siêu âm phun sương vân gỗ đèn led 7 màu (500ml)">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-26%</span>
+                <img id="tab-img-NN-AROMA-DIFFUSER" src="images/may_xong.png" alt="Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-AROMA-DIFFUSER', 'images/may_xong.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-AROMA-DIFFUSER', 'images/may_xong_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Đời sống & Thư giãn</span>
+                <h4 class="tablet-title">Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 47 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">199,000đ</div>
+                        <div class="price-old">270,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml) vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Đời sống & Thư giãn" data-name="đèn hoàng hôn sunset lamp 16 màu kèm remote chill phòng ngủ">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-27%</span>
+                <img id="tab-img-NN-SUNSET-LAMP" src="images/den_hoang_hon.png" alt="Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-SUNSET-LAMP', 'images/den_hoang_hon.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-SUNSET-LAMP', 'images/den_hoang_hon_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Đời sống & Thư giãn</span>
+                <h4 class="tablet-title">Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 44 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">119,000đ</div>
+                        <div class="price-old">165,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tablet-card" data-cat="Đời sống & Thư giãn" data-name="thảm tròn lông cừu nhân tạo êm ái trải bàn trang điểm (d80cm)">
+            <div class="tablet-img-wrap">
+                <span class="badge-discount">-29%</span>
+                <img id="tab-img-NN-RUG-ROUND" src="images/tham_long.png" alt="Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)" class="tablet-thumb">
+                <div class="touch-before-after">
+                    <button class="touch-btn active" onclick="switchTabletImg('NN-RUG-ROUND', 'images/tham_long.png', this)">Sau</button>
+                    <button class="touch-btn" onclick="switchTabletImg('NN-RUG-ROUND', 'images/tham_long_before.png', this)">Trước</button>
+                </div>
+            </div>
+            <div class="tablet-card-body">
+                <span class="badge-cat mb-1 d-inline-block">Đời sống & Thư giãn</span>
+                <h4 class="tablet-title">Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)</h4>
+                <div class="badge-atp mb-2">⚡ Sẵn giao: 38 món</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <div>
+                        <div class="price-val">85,000đ</div>
+                        <div class="price-old">120,000đ</div>
+                    </div>
+                    <button class="btn btn-sage px-3 py-2" onclick="alert('Đã thêm Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm) vào giỏ!')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- TABLET BOTTOM BAR -->
+    <div class="tablet-bottom-bar">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fs-5">🛒</span>
+            <div>
+                <strong style="font-size: 0.85rem;">Giỏ hàng của bạn:</strong>
+                <span class="text-muted fs-7">1 món • 149.000đ</span>
+            </div>
+        </div>
+        <button class="btn btn-sage px-4 py-2" onclick="alert('Tiến hành chuyển hướng sang cổng VietQR...')">Tiến hành đặt hàng →</button>
+    </div>
+
+    <script>
+        function switchTabletImg(pid, src, btn) {
+            const img = document.getElementById('tab-img-' + pid);
+            if (img) img.src = src;
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.touch-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function filterTabletCat(cat, btn) {
+            document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.querySelectorAll('.tablet-card').forEach(card => {
+                const cardCat = card.getAttribute('data-cat');
+                card.style.display = (cat === 'all' || cardCat === cat) ? '' : 'none';
+            });
+        }
+
+        function filterTabletSearch() {
+            const s = document.getElementById('tabletSearch').value.toLowerCase().trim();
+            document.querySelectorAll('.tablet-card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                card.style.display = (!s || name.includes(s)) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

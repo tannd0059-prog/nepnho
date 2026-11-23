@@ -1,0 +1,661 @@
+{
+    "users": {
+        "admin@nepnho.vn": {
+            "email": "admin@nepnho.vn",
+            "password": "scrypt:32768:8:1$Rmc5JqGOhliuDQpH$a188efd0f032266ab1d62d0f8150da1a4bc6dde60a2dac9fa10975566e8b8d27a269382d7958399907a599a879bde3681561000cb61021a3907c730ac4aba767",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "address": "2, Đường Võ Oanh, Phường Thạnh Mỹ Tây, Quận 9 (Kho Trung Tâm), Hồ Chí Minh",
+            "role": "admin",
+            "gps_lat": "10.805136",
+            "gps_lng": "106.716909"
+        },
+        "tan@gmail.com": {
+            "email": "tan@gmail.com",
+            "password": "scrypt:32768:8:1$ffWnlS20XO4UFS2A$5f74384942b38e499e53cdb5aa3e80777e54008ab20188e8fbaac0da76c70a90fd35361a143018a0fa149ebf8c333af68f500285f68a5c5e397de673269f1610",
+            "fullname": "Nguyễn Văn Tân",
+            "phone": "0901234567",
+            "address": "18 đường 297, Phước Long B, Quận 9, TP. Thủ Đức",
+            "role": "customer",
+            "gps_lat": "10.8350",
+            "gps_lng": "106.7750"
+        },
+        "nyngu99@gmail.com": {
+            "email": "nyngu99@gmail.com",
+            "password": "scrypt:32768:8:1$w25oVdBpKK09OcL3$e5c00a3824d94199e13434203439d8e1d7a943a05ca20ff2e5702fd84188a9cd9274472f988a0cc2508d2d6a95e39071eefc27ed68557eac7d23de664cf5798f",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "address": "18 đường 297 p.Phước Long",
+            "role": "customer"
+        },
+        "duytan13012006@gmail.com": {
+            "email": "duytan13012006@gmail.com",
+            "password": "scrypt:32768:8:1$v5hAsjq5P5woh2Hk$ffdd720a7cc9363ca97ddb897723ba4defcb8a9e2dbfdd3ea0ea0c7b4c9b38db37632b90a971f942ff62d909b8dcd3f7e5cacd490b42e097ef58a8e5709dfeb4",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "address": "",
+            "role": "customer"
+        }
+    },
+    "products": {
+        "NN-DESK": {
+            "id": "NN-DESK",
+            "name": "Nếp Bàn — Desk Reset Kit",
+            "price": 229000,
+            "original_price": 279000,
+            "category": "Bàn học & Làm việc",
+            "description": "Giải pháp gom dây cáp, phân khu vật dụng nhỏ và reset góc làm việc trong 15 phút.",
+            "kit_components": [
+                "Khay đựng vật dụng nhỏ",
+                "Kẹp giữ dây cáp nhiều kích cỡ",
+                "Hộp đựng dây sạc",
+                "Bộ nhãn dán tối giản",
+                "Khăn lau Microfiber"
+            ],
+            "before_img": "/images/nep_ban_before.png",
+            "after_img": "/images/nep_ban.png",
+            "stock_physical": 50,
+            "stock_committed": 8
+        },
+        "NN-CLOSET": {
+            "id": "NN-CLOSET",
+            "name": "Nếp Tủ — Closet Reset Kit",
+            "price": 289000,
+            "original_price": 339000,
+            "category": "Tủ quần áo",
+            "description": "Bộ túi gấp gọn phân loại tất, đồ lót, phụ kiện kèm túi thơm hút ẩm và checklist duy trì.",
+            "kit_components": [
+                "Túi/hộp gấp gọn đồ nhỏ",
+                "Bộ phân loại vớ/đồ lót",
+                "Bộ nhãn dán phân khu",
+                "Túi thơm tự nhiên"
+            ],
+            "before_img": "/images/nep_tu_before.png",
+            "after_img": "/images/nep_tu.png",
+            "stock_physical": 40,
+            "stock_committed": 5
+        },
+        "NN-ROOM": {
+            "id": "NN-ROOM",
+            "name": "Nếp Trọ — Small Room Starter Kit",
+            "price": 399000,
+            "original_price": 459000,
+            "category": "Phòng ngủ & Trọ",
+            "description": "Bộ móc dán tải trọng cao, túi treo đa năng và sơ đồ bố trí phòng 3 khu vực chuẩn gọn.",
+            "kit_components": [
+                "Móc dán tường siêu bám",
+                "Túi treo đồ đa năng",
+                "Kẹp phơi vật dụng gọn",
+                "Hướng dẫn bố trí phòng 3 khu"
+            ],
+            "before_img": "/images/nep_tro_before.png",
+            "after_img": "/images/nep_tro.png",
+            "stock_physical": 30,
+            "stock_committed": 5
+        },
+        "NN-COMBO": {
+            "id": "NN-COMBO",
+            "name": "Combo Nếp Bàn + Nếp Tủ (Giảm 10%)",
+            "price": 466000,
+            "original_price": 518000,
+            "category": "Combo Tiết kiệm",
+            "description": "Giải pháp toàn diện cho góc làm việc và tủ quần áo. Tiết kiệm ngay 10% khi mua kèm.",
+            "kit_components": [
+                "Trọn bộ Nếp Bàn",
+                "Trọn bộ Nếp Tủ",
+                "Thiệp chúc mừng viết tay cá nhân hóa"
+            ],
+            "before_img": "/images/combo_neptro_neptu_before.png",
+            "after_img": "/images/combo_neptro_neptu.png",
+            "stock_physical": 20,
+            "stock_committed": 1
+        },
+        "NN-ROTATING-ORGANIZER": {
+            "id": "NN-ROTATING-ORGANIZER",
+            "name": "Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng",
+            "price": 149000,
+            "original_price": 199000,
+            "category": "Làm đẹp & Bàn trang điểm",
+            "description": "Thiết kế xoay 360 độ êm ái, sức chứa 30+ chai lọ skincare, toner, serum và 20 thỏi son. Giải phóng 70% mặt bàn trang điểm.",
+            "kit_components": [
+                "Trụ xoay mica acrylic kim cương chịu lực",
+                "4 khay ngăn điều chỉnh độ cao theo chai lọ",
+                "Khay nóc chia 16 ô cắm son và cọ trang điểm",
+                "Vòng bi thép không gỉ trơn mượt 360°"
+            ],
+            "before_img": "/images/ke_dung_my_pham_before.png",
+            "after_img": "/images/ke_dung_my_pham.png",
+            "stock_physical": 65,
+            "stock_committed": 5
+        },
+        "NN-LED-MIRROR": {
+            "id": "NN-LED-MIRROR",
+            "name": "Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện",
+            "price": 185000,
+            "original_price": 245000,
+            "category": "Làm đẹp & Bàn trang điểm",
+            "description": "Mặt gương kính HD siêu nét chuẩn màu makeup. 3 màu đèn LED (Trắng - Tự nhiên - Vàng ấm). Chân đế tích hợp khay trang sức mini.",
+            "kit_components": [
+                "Gương xoay gập 90 độ mặt kính HD cao cấp",
+                "Dải đèn LED vòng cảm ứng chạm thông minh",
+                "Đế khay đựng nhẫn, khuyên tai, dây chuyền",
+                "Cáp sạc Type-C pin tích điện dùng liên tục 7 ngày"
+            ],
+            "before_img": "/images/guong_trang_diem_led_before.png",
+            "after_img": "/images/guong_trang_diem_led.png",
+            "stock_physical": 45,
+            "stock_committed": 3
+        },
+        "NN-COTTON-BOX": {
+            "id": "NN-COTTON-BOX",
+            "name": "Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn",
+            "price": 69000,
+            "original_price": 95000,
+            "category": "Làm đẹp & Bàn trang điểm",
+            "description": "Hộp mica acrylic trong suốt nắp gỗ tre tự nhiên kháng ẩm. Khe rút thông minh giúp lấy bông tẩy trang 1 giây mà không dính bụi.",
+            "kit_components": [
+                "Thân hộp mica kháng bụi 2 ngăn chuẩn vệ sinh",
+                "Nắp gỗ tre tự nhiên gioăng silicone kín khí",
+                "Khe rút bông tẩy trang lấy nhanh tiện lợi",
+                "Ngăn tròn đựng tăm bông riêng biệt sạch sẽ"
+            ],
+            "before_img": "/images/hop_dung_bong_tay_trang_before.png",
+            "after_img": "/images/hop_dung_bong_tay_trang.png",
+            "stock_physical": 80,
+            "stock_committed": 9
+        },
+        "NN-GOLD-TRAY": {
+            "id": "NN-GOLD-TRAY",
+            "name": "Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu",
+            "price": 175000,
+            "original_price": 230000,
+            "category": "Làm đẹp & Bàn trang điểm",
+            "description": "Khay gương tráng bạc phản chiếu ánh kim loại viền mạ vàng sang trọng. Biến góc bàn làm đẹp thành không gian check-in chuẩn spa cao cấp.",
+            "kit_components": [
+                "Đáy gương pha lê tráng bạc phản chiếu lung linh",
+                "Khung viền hợp kim mạ tĩnh điện chống hoen gỉ",
+                "Chân đệm cao su êm ái chống trầy mặt bàn"
+            ],
+            "before_img": "/images/khay_guong_before.png",
+            "after_img": "/images/khay_guong.png",
+            "stock_physical": 35,
+            "stock_committed": 1
+        },
+        "NN-DRYER-HANGER": {
+            "id": "NN-DRYER-HANGER",
+            "name": "Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)",
+            "price": 79000,
+            "original_price": 110000,
+            "category": "Làm đẹp & Bàn trang điểm",
+            "description": "Dán tường siêu dính không cần khoan đục. Tích hợp móc cuộn dây điện máy sấy và cốc cắm lược chải tóc, máy duỗi uốn tóc gọn gàng.",
+            "kit_components": [
+                "Giá đỡ máy sấy có viền silicone chống xước máy",
+                "Cốc cắm lược & máy tạo kiểu có lỗ thoát nhiệt",
+                "Móc gài phích cắm điện gọn gàng an toàn",
+                "Miếng dán cường lực chống ẩm chịu lực 5kg"
+            ],
+            "before_img": "/images/gia_treo_may_say_before.png",
+            "after_img": "/images/gia_treo_may_say.png",
+            "stock_physical": 55,
+            "stock_committed": 2
+        },
+        "NN-STEEL-BOX": {
+            "id": "NN-STEEL-BOX",
+            "name": "Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)",
+            "price": 129000,
+            "original_price": 169000,
+            "category": "Góc phòng gọn gàng",
+            "description": "Lưu trữ chăn màn, ga gối, quần áo mùa đông. Khung thép mạ chịu tải 60kg xếp chồng nhiều tầng, mở lấy đồ cả nắp trên và cửa trước.",
+            "kit_components": [
+                "Khung thép mạ crom trợ lực chắc chắn chống sập",
+                "Vải Oxford 600D dày dặn chống ẩm mốc kháng bụi",
+                "Cửa nhựa PVC trong suốt tìm đồ trong 1 giây",
+                "Khóa kéo kép kim loại trơn tru hai chiều"
+            ],
+            "before_img": "/images/hop_khung_quan_ao_before.png",
+            "after_img": "/images/hop_khung_quan_ao.png",
+            "stock_physical": 50,
+            "stock_committed": 4
+        },
+        "NN-DIVIDER-BOX": {
+            "id": "NN-DIVIDER-BOX",
+            "name": "Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa",
+            "price": 89000,
+            "original_price": 125000,
+            "category": "Góc phòng gọn gàng",
+            "description": "Bộ 3 kích cỡ (6 ngăn cho áo lót, 7 ngăn cho quần mỏng/váy lụa, 11 ngăn cho tất/phụ kiện). Xếp vừa khít ngăn kéo tủ đồ.",
+            "kit_components": [
+                "Hộp 6 ngăn cho áo ngực & khăn quàng",
+                "Hộp 7 ngăn cho quần lót & đồ ngủ mỏng",
+                "Hộp 11 ngăn cho tất, vớ & phụ kiện",
+                "Chất liệu vải dệt thông thoáng kháng khuẩn chống mùi"
+            ],
+            "before_img": "/images/set_hop_3_ngan_before.png",
+            "after_img": "/images/set_hop_3_ngan.png",
+            "stock_physical": 70,
+            "stock_committed": 6
+        },
+        "NN-SHOE-RACK": {
+            "id": "NN-SHOE-RACK",
+            "name": "Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian",
+            "price": 99000,
+            "original_price": 139000,
+            "category": "Góc phòng gọn gàng",
+            "description": "Mở ra dùng ngay trong 5 giây không cần ốc vít. Bề rộng chỉ 26cm, tận dụng hoàn hảo khe hẹp sau cửa ra vào của phòng trọ nhỏ.",
+            "kit_components": [
+                "Khung nhựa PP nguyên sinh dẻo dai chống gãy giòn",
+                "5 tầng kệ chứa tối đa 10 đôi giày dép",
+                "Khớp gập module thu gọn linh hoạt khi chuyển trọ",
+                "Gờ chắn chống rơi bụi đất ra sàn nhà"
+            ],
+            "before_img": "/images/ke_de_giay_before.png",
+            "after_img": "/images/ke_de_giay.png",
+            "stock_physical": 40,
+            "stock_committed": 3
+        },
+        "NN-CABLE-BOX": {
+            "id": "NN-CABLE-BOX",
+            "name": "Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy",
+            "price": 115000,
+            "original_price": 155000,
+            "category": "Góc phòng gọn gàng",
+            "description": "Gom gọn toàn bộ ổ cắm 6-8 lỗ và mớ dây sạc rườm rà dưới sàn. Nắp gỗ tự nhiên có rãnh làm giá đỡ điện thoại/ipad khi sạc an toàn.",
+            "kit_components": [
+                "Hộp nhựa ABS chống cháy cách điện cao cấp",
+                "Nắp gỗ tre tự nhiên có rãnh đỡ điện thoại",
+                "Các khe thoát khí tản nhiệt thông minh hai bên",
+                "Khe luồn dây hai đầu gọn gàng"
+            ],
+            "before_img": "/images/hop_dung_day_before.png",
+            "after_img": "/images/hop_dung_day.png",
+            "stock_physical": 60,
+            "stock_committed": 2
+        },
+        "NN-AROMA-DIFFUSER": {
+            "id": "NN-AROMA-DIFFUSER",
+            "name": "Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)",
+            "price": 199000,
+            "original_price": 270000,
+            "category": "Đời sống & Thư giãn",
+            "description": "Khuếch tán sương siêu mịn bù ẩm cho phòng điều hòa giúp dưỡng ẩm da khi ngủ. Kết hợp đèn LED 7 màu êm dịu thay thế đèn ngủ.",
+            "kit_components": [
+                "Máy khuếch tán dung tích lớn 500ml hoạt động 10h",
+                "Remote điều khiển từ xa hẹn giờ 1h/3h/6h",
+                "Cảm biến tự ngắt an toàn khi cạn nước",
+                "Tặng kèm 1 lọ tinh dầu sả chanh 10ml nguyên chất"
+            ],
+            "before_img": "/images/may_xong_before.png",
+            "after_img": "/images/may_xong.png",
+            "stock_physical": 50,
+            "stock_committed": 3
+        },
+        "NN-SUNSET-LAMP": {
+            "id": "NN-SUNSET-LAMP",
+            "name": "Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ",
+            "price": 119000,
+            "original_price": 165000,
+            "category": "Đời sống & Thư giãn",
+            "description": "Thấu kính pha lê xoay 360 độ tạo hiệu ứng hoàng hôn lãng mạn. Giúp góc phòng ngủ bừng sáng ấm cúng và là phụ kiện chụp ảnh makeup đỉnh cao.",
+            "kit_components": [
+                "Thấu kính pha lê truyền sáng quang học cao cấp",
+                "Cổ đèn kim loại uốn cong 360 độ linh hoạt",
+                "Remote điều khiển 24 phím 16 dải màu RGB",
+                "Đế kim loại tròn đúc đặc chống ngã đổ"
+            ],
+            "before_img": "/images/den_hoang_hon_before.png",
+            "after_img": "/images/den_hoang_hon.png",
+            "stock_physical": 45,
+            "stock_committed": 1
+        },
+        "NN-RUG-ROUND": {
+            "id": "NN-RUG-ROUND",
+            "name": "Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)",
+            "price": 85000,
+            "original_price": 120000,
+            "category": "Đời sống & Thư giãn",
+            "description": "Thảm lông mềm mịn êm chân đường kính 80cm phong cách Bắc Âu. Đế chống trượt tuyệt đối, tạo điểm nhấn ấm cúng cho góc làm đẹp phòng trọ.",
+            "kit_components": [
+                "Lớp lông sợi microfiber mềm mịn chống bết dính",
+                "Đế cao su silicon hạt nổi chống trượt 100%",
+                "Dễ dàng giặt máy hoặc vệ sinh hút bụi tiện lợi"
+            ],
+            "before_img": "/images/tham_long_before.png",
+            "after_img": "/images/tham_long.png",
+            "stock_physical": 40,
+            "stock_committed": 2
+        }
+    },
+    "orders": {
+        "822605": {
+            "id": "822605",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "email": "nyngu99@gmail.com",
+            "address": "18 đường 297 p.Phước Long ",
+            "payment_method": "COD",
+            "total": 289000,
+            "items": [
+                {
+                    "id": "NN-CLOSET",
+                    "name": "Nếp Tủ — Closet Reset Kit",
+                    "price": 289000,
+                    "qty": 1
+                }
+            ],
+            "status": "WMS Đóng gói (Pick & Pack)",
+            "created_at": "14:39 18/10/2026"
+        },
+        "633092": {
+            "id": "633092",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "email": "nyngu99@gmail.com",
+            "address": "18 đường 297 p.Phước Long",
+            "payment_method": "VIETQR",
+            "total": 289000,
+            "items": [
+                {
+                    "id": "NN-CLOSET",
+                    "name": "Nếp Tủ — Closet Reset Kit",
+                    "price": 289000,
+                    "qty": 1
+                }
+            ],
+            "status": "WMS Đóng gói (Pick & Pack)",
+            "created_at": "14:43 18/10/2026"
+        },
+        "623994": {
+            "id": "623994",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "address": "Kho Trung Tâm Nếp Nhỏ, TP.HCM",
+            "payment_method": "VIETQR",
+            "total": 399000,
+            "items": [
+                {
+                    "id": "NN-ROOM",
+                    "name": "Nếp Trọ — Small Room Starter Kit",
+                    "price": 399000,
+                    "qty": 1
+                }
+            ],
+            "status": "Chờ xác nhận",
+            "created_at": "12:58 19/10/2026"
+        },
+        "285950": {
+            "id": "285950",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "email": "tan@gmail.com",
+            "address": "TP.HCM",
+            "payment_method": "VIETQR",
+            "total": 149000,
+            "items": [
+                {
+                    "id": "NN-ROTATING-ORGANIZER",
+                    "name": "Kệ Đựng Mỹ Phẩm Xoay 360°",
+                    "price": 149000,
+                    "qty": 1
+                }
+            ],
+            "status": "Chờ xác nhận",
+            "created_at": "12:52 02/11/2026"
+        },
+        "122708": {
+            "id": "122708",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "address": "18 đường 297",
+            "payment_method": "VIETQR",
+            "total": 229000,
+            "items": [
+                {
+                    "id": "NN-DESK",
+                    "name": "Nếp Bàn — Desk Reset Kit",
+                    "price": 229000,
+                    "qty": 1
+                }
+            ],
+            "status": "Chờ xác nhận",
+            "created_at": "12:55 02/11/2026"
+        },
+        "903864": {
+            "id": "903864",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "nyngu99@gmail.com",
+            "address": "18",
+            "payment_method": "VIETQR",
+            "total": 69000,
+            "items": [
+                {
+                    "id": "NN-COTTON-BOX",
+                    "name": "Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn",
+                    "price": 69000,
+                    "qty": 1
+                }
+            ],
+            "status": "Chờ xác nhận",
+            "created_at": "12:59 02/11/2026"
+        },
+        "574908": {
+            "id": "574908",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "email": "tan@gmail.com",
+            "address": "18 đường 297 p.Phước Long, TP.HCM",
+            "payment_method": "VIETQR",
+            "payment_status": "Đã thanh toán",
+            "total": 149000,
+            "items": [
+                {
+                    "id": "NN-ROTATING-ORGANIZER",
+                    "img": "https://example.com/img.jpg",
+                    "name": "Kệ Đựng Mỹ Phẩm Xoay 360°",
+                    "price": 149000,
+                    "qty": 1
+                }
+            ],
+            "status": "WMS Đóng gói (Pick & Pack)",
+            "created_at": "13:11 02/11/2026",
+            "paid_at": "13:11 02/11/2026"
+        },
+        "970230": {
+            "id": "970230",
+            "fullname": "Khách Mua COD",
+            "phone": "0901234567",
+            "email": "cod@gmail.com",
+            "address": "Quận 1, TP.HCM",
+            "payment_method": "COD",
+            "payment_status": "COD (Chưa thu)",
+            "total": 185000,
+            "items": [
+                {
+                    "id": "NN-LED-MIRROR",
+                    "img": "https://example.com/mirror.jpg",
+                    "name": "Gương LED",
+                    "price": 185000,
+                    "qty": 1
+                }
+            ],
+            "status": "Chờ xác nhận (COD)",
+            "created_at": "13:11 02/11/2026",
+            "paid_at": ""
+        },
+        "274363": {
+            "id": "274363",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "email": "nyngu99@gmail.com",
+            "address": "18",
+            "payment_method": "VIETQR",
+            "payment_status": "Đã thanh toán",
+            "total": 69000,
+            "items": [
+                {
+                    "id": "NN-COTTON-BOX",
+                    "img": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600",
+                    "name": "Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn",
+                    "price": 69000,
+                    "qty": 1
+                }
+            ],
+            "status": "Đơn hàng đang được chuẩn bị",
+            "created_at": "12:57 09/11/2026",
+            "created_timestamp": 1794203847.710927,
+            "expires_at_timestamp": 1794290247.710927,
+            "paid_at": "12:57 09/11/2026"
+        },
+        "764093": {
+            "id": "764093",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "address": "Kho Trung Tâm Nếp Nhỏ, TP.HCM",
+            "payment_method": "VIETQR",
+            "payment_status": "Đã thanh toán",
+            "total": 229000,
+            "items": [
+                {
+                    "id": "NN-DESK",
+                    "img": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600",
+                    "name": "Nếp Bàn — Desk Reset Kit",
+                    "price": 229000,
+                    "qty": 1
+                }
+            ],
+            "status": "WMS Đóng gói (Pick & Pack)",
+            "created_at": "14:44 19/11/2026",
+            "paid_at": "14:44 19/11/2026"
+        },
+        "071370": {
+            "id": "071370",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "address": "Kho Trung Tâm Nếp Nhỏ, TP.HCM",
+            "payment_method": "VIETQR",
+            "payment_status": "Đã thanh toán",
+            "total": 229000,
+            "items": [
+                {
+                    "id": "NN-DESK",
+                    "img": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600",
+                    "name": "Nếp Bàn — Desk Reset Kit",
+                    "price": 229000,
+                    "qty": 1
+                }
+            ],
+            "status": "WMS Đóng gói (Pick & Pack)",
+            "created_at": "14:45 19/11/2026",
+            "paid_at": "14:45 19/11/2026"
+        },
+        "703797": {
+            "id": "703797",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "province": "Hồ Chí Minh",
+            "district": "TP. Thủ Đức",
+            "ward": "Phường Hiệp Phú",
+            "street_address": "156-158, Đình Phong Phú, Khu phố 54",
+            "address": "156-158, Đình Phong Phú, Khu phố 54, Phường Hiệp Phú, TP. Thủ Đức, Hồ Chí Minh",
+            "geo_lat": "10.844325",
+            "geo_lng": "106.781337",
+            "payment_method": "VIETQR",
+            "payment_status": "Đã thanh toán",
+            "total": 289000,
+            "items": [
+                {
+                    "id": "NN-CLOSET",
+                    "img": "https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=600",
+                    "name": "Nếp Tủ — Closet Reset Kit",
+                    "price": 289000,
+                    "qty": 1
+                }
+            ],
+            "status": "Đơn hàng đang được chuẩn bị",
+            "created_at": "14:46 19/11/2026",
+            "created_timestamp": 1795074417.118264,
+            "expires_at_timestamp": 1795160817.118264,
+            "paid_at": "14:47 19/11/2026"
+        },
+        "698895": {
+            "id": "698895",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "province": "Hồ Chí Minh",
+            "district": "Phường Thạnh Mỹ Tây",
+            "ward": "Khu phố 44",
+            "street_address": "2 Đường Võ Oanh",
+            "address": "2 Đường Võ Oanh, Khu phố 44, Phường Thạnh Mỹ Tây, Hồ Chí Minh",
+            "geo_lat": "10.805143",
+            "geo_lng": "106.716918",
+            "warehouse_location": "Kho Trung Tâm Quận 9 (TP. Thủ Đức, TP.HCM)",
+            "payment_method": "VIETQR",
+            "shipping_carrier": "Giao Hàng Nhanh (GHN Express)",
+            "shipping_fee": 0,
+            "subtotal": 69000,
+            "payment_status": "Đã thanh toán",
+            "total": 69000,
+            "items": [
+                {
+                    "id": "NN-COTTON-BOX",
+                    "img": "/images/hop_dung_bong_tay_trang.png",
+                    "name": "Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn",
+                    "price": 69000,
+                    "qty": 1
+                }
+            ],
+            "status": "Đơn hàng đang được chuẩn bị",
+            "created_at": "12:08 23/11/2026",
+            "created_timestamp": 1795410502.128,
+            "expires_at_timestamp": 1795496902.128,
+            "paid_at": "12:08 23/11/2026"
+        },
+        "090014": {
+            "id": "090014",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "province": "Hồ Chí Minh",
+            "district": "Quận 9 (Kho Trung Tâm)",
+            "ward": "Phường Thạnh Mỹ Tây",
+            "street_address": "2, Đường Võ Oanh",
+            "address": "2, Đường Võ Oanh, Phường Thạnh Mỹ Tây, Quận 9 (Kho Trung Tâm), Hồ Chí Minh",
+            "geo_lat": "10.805136",
+            "geo_lng": "106.716909",
+            "warehouse_location": "Kho Trung Tâm Quận 9 (TP. Thủ Đức, TP.HCM)",
+            "payment_method": "VIETQR",
+            "shipping_carrier": "Giao Hàng Nhanh (GHN Express)",
+            "shipping_fee": 0,
+            "subtotal": 89000,
+            "payment_status": "Đã thanh toán",
+            "total": 89000,
+            "items": [
+                {
+                    "id": "NN-DIVIDER-BOX",
+                    "img": "/images/set_hop_3_ngan.png",
+                    "name": "Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa",
+                    "price": 89000,
+                    "qty": 1
+                }
+            ],
+            "status": "Đơn hàng đang được chuẩn bị",
+            "created_at": "12:19 23/11/2026",
+            "created_timestamp": 1795411147.843118,
+            "expires_at_timestamp": 1795497547.843118,
+            "paid_at": "12:19 23/11/2026"
+        }
+    },
+    "bank_config": {
+        "bank_code": "MB",
+        "bank_name": "Ngân hàng TMCP Quân Đội (MBBank)",
+        "account_number": "0368688548",
+        "account_holder": "NGUYEN DUY TAN",
+        "qr_template": "compact2"
+    }
+}

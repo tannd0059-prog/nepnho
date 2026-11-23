@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Nếp Nhỏ — Desktop Interface (Giao diện Máy Tính)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        
+:root {
+    --bg-paper: #F7F4EE;
+    --sage-green: #7D9D7C;
+    --sage-dark: #658464;
+    --earth-brown: #8A6F5A;
+    --warm-accent: #E88D67;
+    --text-dark: #2B2B2B;
+    --text-muted: #6B7280;
+    --card-bg: #FFFFFF;
+}
+* { box-sizing: border-box; }
+body {
+    background-color: var(--bg-paper);
+    color: var(--text-dark);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.text-sage { color: var(--sage-green) !important; }
+.bg-sage { background-color: var(--sage-green) !important; color: white !important; }
+.btn-sage { background-color: var(--sage-green); color: white; border: none; font-weight: 600; border-radius: 8px; transition: 0.2s; }
+.btn-sage:hover { background-color: var(--sage-dark); color: white; }
+.price-tag { color: var(--warm-accent); font-weight: 700; }
+.badge-atp { background-color: #E8F5E9; color: #2E7D32; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+.badge-cat { background-color: #F1ECE1; color: var(--earth-brown); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+
+        /* DESKTOP SPECIFIC STYLES */
+        .desktop-container { max-width: 1360px; margin: 0 auto; padding: 0 20px; }
+        
+        /* TOP BAR */
+        .top-promo-bar { background: #2B2B2B; color: #E5E7EB; font-size: 0.8rem; padding: 8px 0; }
+        
+        /* HEADER */
+        .desktop-header { background: #FFFFFF; border-bottom: 2px solid var(--sage-green); padding: 14px 0; }
+        .brand-title { font-weight: 800; color: var(--earth-brown); font-size: 1.6rem; letter-spacing: -0.5px; text-decoration: none; }
+        .brand-subtitle { font-size: 0.78rem; color: #777; margin-top: -2px; }
+        .desktop-search-bar { max-width: 540px; position: relative; }
+        .desktop-search-input { border-radius: 30px; padding: 10px 20px 10px 42px; border: 1.5px solid #E2E8F0; background: #F8FAFC; width: 100%; outline: none; transition: 0.2s; }
+        .desktop-search-input:focus { border-color: var(--sage-green); background: #FFF; box-shadow: 0 0 0 4px rgba(125,157,124,0.15); }
+        .search-icon { position: absolute; left: 16px; top: 12px; color: #94A3B8; font-size: 1rem; }
+        
+        /* MAIN NAV */
+        .desktop-nav { background: #FFFFFF; border-bottom: 1px solid #E2E8F0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .nav-link-custom { color: #334155; font-weight: 600; font-size: 0.92rem; padding: 12px 16px !important; text-decoration: none; display: inline-block; transition: 0.2s; }
+        .nav-link-custom:hover, .nav-link-custom.active { color: var(--sage-green); border-bottom: 2px solid var(--sage-green); }
+        
+        /* HERO BANNER */
+        .hero-banner-desktop {
+            background: linear-gradient(135deg, #F1ECE1 0%, #E5DAC6 100%);
+            border-radius: 20px;
+            padding: 48px;
+            margin: 24px 0 32px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .hero-title { font-size: 2.3rem; font-weight: 800; color: #1E293B; line-height: 1.25; }
+        .hero-badge { background: #DCFCE7; color: #15803D; font-weight: 700; font-size: 0.8rem; padding: 6px 14px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+        
+        /* COMMITMENT CARDS */
+        .commit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+        .commit-card { background: #FFFFFF; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; border: 1px solid #E2E8F0; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .commit-icon { font-size: 1.8rem; }
+        .commit-title { font-size: 0.88rem; font-weight: 700; color: #1E293B; margin-bottom: 2px; }
+        .commit-desc { font-size: 0.76rem; color: #64748B; margin: 0; }
+        
+        /* STORE SECTION */
+        .store-layout { display: grid; grid-template-columns: 260px 1fr; gap: 28px; }
+        
+        /* SIDEBAR */
+        .filter-sidebar { background: #FFFFFF; border-radius: 16px; padding: 22px; border: 1px solid #E2E8F0; height: fit-content; position: sticky; top: 20px; }
+        .filter-group-title { font-size: 0.95rem; font-weight: 700; color: #1E293B; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1.5px solid #F1F5F9; display: flex; justify-content: space-between; align-items: center; }
+        .filter-check { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.86rem; color: #475569; cursor: pointer; }
+        .filter-check input { width: 16px; height: 16px; accent-color: var(--sage-green); }
+        
+        /* PRODUCT GRID (4 COLUMNS DESKTOP) */
+        .product-grid-desktop { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .desktop-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #E8ECEF;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .desktop-card:hover { transform: translateY(-6px); box-shadow: 0 12px 28px rgba(0,0,0,0.08); border-color: var(--sage-green); }
+        .card-img-wrap { position: relative; height: 210px; background: #FAF7F2; overflow: hidden; }
+        .product-thumb { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .desktop-card:hover .product-thumb { transform: scale(1.04); }
+        .badge-discount { position: absolute; top: 10px; left: 10px; background: #EF4444; color: white; font-weight: 700; font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; z-index: 2; }
+        .badge-cat-top { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.92); color: var(--earth-brown); font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; z-index: 2; backdrop-filter: blur(4px); }
+        
+        .img-toggle-bar { position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; gap: 4px; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); border-radius: 8px; padding: 3px; z-index: 3; }
+        .toggle-btn { flex: 1; border: none; background: transparent; color: #FFF; font-size: 0.68rem; font-weight: 600; padding: 4px 0; border-radius: 6px; cursor: pointer; transition: 0.15s; }
+        .toggle-btn.active { background: #FFFFFF; color: #1E293B; }
+        
+        .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
+        .rating { font-size: 0.75rem; color: #64748B; }
+        .product-title { font-size: 0.92rem; font-weight: 700; color: #1E293B; margin: 4px 0 6px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.7em; }
+        .product-desc { font-size: 0.78rem; color: #64748B; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
+        .card-footer-box { margin-top: auto; padding-top: 12px; border-top: 1px solid #F1F5F9; display: flex; justify-content: space-between; align-items: center; }
+        .price-val { font-size: 1.15rem; font-weight: 800; color: var(--warm-accent); }
+        .price-old { font-size: 0.78rem; color: #94A3B8; text-decoration: line-through; }
+        
+        /* FOOTER */
+        .desktop-footer { background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 48px 0 24px; margin-top: 60px; }
+        .footer-col-title { font-size: 0.95rem; font-weight: 700; color: #1E293B; margin-bottom: 14px; }
+        .footer-link { color: #64748B; font-size: 0.84rem; text-decoration: none; margin-bottom: 8px; display: block; }
+        .footer-link:hover { color: var(--sage-green); }
+
+        /* DEVICE BADGE FLOATING */
+        .device-indicator { position: fixed; bottom: 20px; left: 20px; background: #1E293B; color: #FFF; padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 8px; }
+    </style>
+</head>
+<body>
+
+    <!-- DEVICE INDICATOR -->
+    <div class="device-indicator">
+        <span>🖥️</span> Đang xem: <strong>Giao diện Desktop (&gt;1200px)</strong>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="top-promo-bar">
+        <div class="desktop-container d-flex justify-content-between align-items-center">
+            <div>🌿 <strong>Nếp Nhỏ D2C:</strong> Gọn một góc, nhẹ cả ngày | Miễn phí giao hàng đơn từ 299.000đ</div>
+            <div class="d-flex gap-3">
+                <span>📍 Giao nhanh định vị GPS</span>
+                <span>📞 Hotline: 0901.234.567</span>
+                <span>⚙️ <a href="/admin" class="text-white text-decoration-none">Quản trị</a></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="desktop-header">
+        <div class="desktop-container d-flex justify-content-between align-items-center">
+            <a href="desktop.html" class="d-flex align-items-center text-decoration-none">
+                <div>
+                    <div class="brand-title">🌿 NẾP NHỎ</div>
+                    <div class="brand-subtitle">Gọn một góc, nhẹ cả ngày</div>
+                </div>
+            </a>
+            
+            <div class="desktop-search-bar flex-grow-1 mx-5">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="desktop-search-input" placeholder="Tìm kiếm kệ mỹ phẩm, gương LED, hộp gấp gọn, đèn chill..." onkeyup="filterProducts()">
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2 px-3 py-2 bg-light rounded-pill border" style="font-size: 0.85rem;">
+                    <span>📍</span>
+                    <div>
+                        <div style="font-size: 0.7rem; color: #888;">Giao đến:</div>
+                        <strong style="color: #333;">Q.5, TP. Hồ Chí Minh</strong>
+                    </div>
+                </div>
+                
+                <a href="#cart" class="btn btn-outline-dark position-relative rounded-pill px-3 py-2" onclick="alert('Giỏ hàng hiện có 1 sản phẩm đã thêm!')">
+                    🛒 <strong>Giỏ hàng</strong>
+                    <span id="cartCountBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">1</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION MENU -->
+    <nav class="desktop-nav">
+        <div class="desktop-container d-flex gap-1">
+            <a href="#" class="nav-link-custom active" onclick="filterByCat('all')">Tất cả sản phẩm</a>
+            <a href="#" class="nav-link-custom" onclick="filterByCat('Làm đẹp & Bàn trang điểm')">Làm đẹp & Bàn phấn</a>
+            <a href="#" class="nav-link-custom" onclick="filterByCat('Bàn học & Làm việc')">Bàn học & Làm việc</a>
+            <a href="#" class="nav-link-custom" onclick="filterByCat('Tủ đồ & Quần áo')">Tủ đồ & Quần áo</a>
+            <a href="#" class="nav-link-custom" onclick="filterByCat('Phòng ngủ & Decor chill')">Phòng ngủ & Decor chill</a>
+            <a href="#" class="nav-link-custom" onclick="filterByCat('Combo giải pháp toàn diện')">Combo tiết kiệm</a>
+            <span class="ms-auto d-flex align-items-center text-danger fw-bold fs-7 pe-2">⚡ FLASH SALE GIẢM ĐẾN 35%</span>
+        </div>
+    </nav>
+
+    <!-- MAIN BODY -->
+    <main class="desktop-container">
+        
+        <!-- HERO BANNER -->
+        <section class="hero-banner-desktop">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <span class="hero-badge">✨ GIẢI PHÁP SẮP XẾP PHÒNG TRỌ & NHÀ PHỐ GỌN GÀNG</span>
+                    <h1 class="hero-title mb-3">Biến Căn Phòng Bừa Bộn Thành Góc Chill Tinh Tế Trong 15 Phút</h1>
+                    <p class="text-muted fs-6 mb-4" style="max-width: 580px;">
+                        Bộ phụ kiện kệ mica 360°, hộp vải kháng bụi và các giải pháp decor chuẩn phong cách Hàn Quốc giúp bạn giải phóng 70% diện tích mặt bàn.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="#storeSection" class="btn btn-sage px-4 py-2 fs-6 rounded-pill">Khám phá cửa hàng ngay ↓</a>
+                        <button class="btn btn-outline-dark px-4 py-2 fs-6 rounded-pill" onclick="alert('Đã kích hoạt định vị GPS tự động cho đơn hàng!')">📍 Bắt tọa độ GPS giao hàng</button>
+                    </div>
+                </div>
+                <div class="col-lg-5 text-center">
+                    <div class="position-relative d-inline-block">
+                        <img src="images/combo_neptro_neptu.png" alt="Combo Nếp Nhỏ" class="rounded-4 shadow-lg" style="max-height: 280px; width: auto; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 m-3 bg-white p-2 px-3 rounded-pill shadow-sm border" style="font-size: 0.78rem; font-weight: 700; color: #16A34A;">
+                            🌿 Đã phục vụ 1,500+ bạn trẻ
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VALUE COMMITMENTS -->
+        <div class="commit-grid">
+            <div class="commit-card">
+                <div class="commit-icon">🚀</div>
+                <div>
+                    <div class="commit-title">Giao nhanh định vị GPS</div>
+                    <div class="commit-desc">Chính xác tận cổng phòng trọ</div>
+                </div>
+            </div>
+            <div class="commit-card">
+                <div class="commit-icon">🔄</div>
+                <div>
+                    <div class="commit-title">Đổi trả 7 ngày 1:1</div>
+                    <div class="commit-desc">Miễn phí nếu vỡ hoặc lỗi mica</div>
+                </div>
+            </div>
+            <div class="commit-card">
+                <div class="commit-icon">💎</div>
+                <div>
+                    <div class="commit-title">Chất liệu cao cấp</div>
+                    <div class="commit-desc">Mica acrylic, nắp tre tự nhiên</div>
+                </div>
+            </div>
+            <div class="commit-card">
+                <div class="commit-icon">💳</div>
+                <div>
+                    <div class="commit-title">VietQR thanh toán 1-chạm</div>
+                    <div class="commit-desc">Tự động hủy sau 24h hoàn ATP</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STORE LAYOUT (SIDEBAR + 4 COLUMNS PRODUCT GRID) -->
+        <div id="storeSection" class="store-layout">
+            
+            <!-- SIDEBAR FILTER -->
+            <aside class="filter-sidebar">
+                <div class="filter-group-title">
+                    <span>DANH MỤC</span>
+                    <small class="text-muted fw-normal">(16 món)</small>
+                </div>
+                <div class="mb-4">
+                    <label class="filter-check"><input type="checkbox" name="cat" value="Bàn học & Làm việc" onchange="filterProducts()"> <span>Bàn học & Làm việc</span></label><label class="filter-check"><input type="checkbox" name="cat" value="Combo Tiết kiệm" onchange="filterProducts()"> <span>Combo Tiết kiệm</span></label><label class="filter-check"><input type="checkbox" name="cat" value="Góc phòng gọn gàng" onchange="filterProducts()"> <span>Góc phòng gọn gàng</span></label><label class="filter-check"><input type="checkbox" name="cat" value="Làm đẹp & Bàn trang điểm" onchange="filterProducts()"> <span>Làm đẹp & Bàn trang điểm</span></label><label class="filter-check"><input type="checkbox" name="cat" value="Phòng ngủ & Trọ" onchange="filterProducts()"> <span>Phòng ngủ & Trọ</span></label><label class="filter-check"><input type="checkbox" name="cat" value="Tủ quần áo" onchange="filterProducts()"> <span>Tủ quần áo</span></label><label class="filter-check"><input type="checkbox" name="cat" value="Đời sống & Thư giãn" onchange="filterProducts()"> <span>Đời sống & Thư giãn</span></label>
+                </div>
+
+                <div class="filter-group-title">
+                    <span>KHOẢNG GIÁ</span>
+                </div>
+                <div class="mb-4">
+                    <label class="filter-check"><input type="radio" name="priceRange" value="all" checked onchange="filterProducts()"> <span>Tất cả mức giá</span></label>
+                    <label class="filter-check"><input type="radio" name="priceRange" value="under150" onchange="filterProducts()"> <span>Dưới 150.000đ</span></label>
+                    <label class="filter-check"><input type="radio" name="priceRange" value="150to300" onchange="filterProducts()"> <span>150.000đ - 300.000đ</span></label>
+                    <label class="filter-check"><input type="radio" name="priceRange" value="above300" onchange="filterProducts()"> <span>Trên 300.000đ</span></label>
+                </div>
+
+                <div class="filter-group-title">
+                    <span>TỒN KHO THỰC TẾ (ATP)</span>
+                </div>
+                <div>
+                    <label class="filter-check"><input type="checkbox" checked disabled> <span>Chỉ hiện sản phẩm sẵn sàng giao</span></label>
+                </div>
+            </aside>
+
+            <!-- PRODUCT DISPLAY AREA -->
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="fs-5 fw-bold text-dark m-0">Tất Cả Sản Phẩm Sẵn Sàng Giao (<span id="visibleCount">16</span>)</h2>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-7 text-muted">Sắp xếp:</span>
+                        <select class="form-select form-select-sm" style="width: 170px;" onchange="sortProducts(this.value)">
+                            <option value="featured">Nổi bật nhất</option>
+                            <option value="price-asc">Giá: Thấp đến Cao</option>
+                            <option value="price-desc">Giá: Cao đến Thấp</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4 COLUMNS PRODUCT GRID -->
+                <div class="product-grid-desktop" id="productGrid">
+                    
+        <div class="desktop-card-col" data-cat="Bàn học & Làm việc" data-name="nếp bàn — desk reset kit" data-price="229000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-17%</span>
+                    <span class="badge-cat-top">Bàn học & Làm việc</span>
+                    <img id="img-NN-DESK" src="images/nep_ban.png" alt="Nếp Bàn — Desk Reset Kit" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-DESK', 'images/nep_ban.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-DESK', 'images/nep_ban_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 42 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Nếp Bàn — Desk Reset Kit">Nếp Bàn — Desk Reset Kit</h3>
+                    <p class="product-desc">Giải pháp gom dây cáp, phân khu vật dụng nhỏ và reset góc làm việc trong 15 phút.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">229,000đ</div>
+                            <div class="price-old">279,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Nếp Bàn — Desk Reset Kit')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-DESK')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Tủ quần áo" data-name="nếp tủ — closet reset kit" data-price="289000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-14%</span>
+                    <span class="badge-cat-top">Tủ quần áo</span>
+                    <img id="img-NN-CLOSET" src="images/nep_tu.png" alt="Nếp Tủ — Closet Reset Kit" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-CLOSET', 'images/nep_tu.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-CLOSET', 'images/nep_tu_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 35 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Nếp Tủ — Closet Reset Kit">Nếp Tủ — Closet Reset Kit</h3>
+                    <p class="product-desc">Bộ túi gấp gọn phân loại tất, đồ lót, phụ kiện kèm túi thơm hút ẩm và checklist duy trì.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">289,000đ</div>
+                            <div class="price-old">339,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Nếp Tủ — Closet Reset Kit')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-CLOSET')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Phòng ngủ & Trọ" data-name="nếp trọ — small room starter kit" data-price="399000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-13%</span>
+                    <span class="badge-cat-top">Phòng ngủ & Trọ</span>
+                    <img id="img-NN-ROOM" src="images/nep_tro.png" alt="Nếp Trọ — Small Room Starter Kit" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-ROOM', 'images/nep_tro.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-ROOM', 'images/nep_tro_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 25 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Nếp Trọ — Small Room Starter Kit">Nếp Trọ — Small Room Starter Kit</h3>
+                    <p class="product-desc">Bộ móc dán tải trọng cao, túi treo đa năng và sơ đồ bố trí phòng 3 khu vực chuẩn gọn.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">399,000đ</div>
+                            <div class="price-old">459,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Nếp Trọ — Small Room Starter Kit')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-ROOM')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Combo Tiết kiệm" data-name="combo nếp bàn + nếp tủ (giảm 10%)" data-price="466000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-10%</span>
+                    <span class="badge-cat-top">Combo Tiết kiệm</span>
+                    <img id="img-NN-COMBO" src="images/combo_neptro_neptu.png" alt="Combo Nếp Bàn + Nếp Tủ (Giảm 10%)" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-COMBO', 'images/combo_neptro_neptu.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-COMBO', 'images/combo_neptro_neptu_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 19 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Combo Nếp Bàn + Nếp Tủ (Giảm 10%)">Combo Nếp Bàn + Nếp Tủ (Giảm 10%)</h3>
+                    <p class="product-desc">Giải pháp toàn diện cho góc làm việc và tủ quần áo. Tiết kiệm ngay 10% khi mua kèm.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">466,000đ</div>
+                            <div class="price-old">518,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Combo Nếp Bàn + Nếp Tủ (Giảm 10%)')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-COMBO')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Làm đẹp & Bàn trang điểm" data-name="kệ đựng mỹ phẩm xoay 360° diamond mica đa tầng" data-price="149000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-25%</span>
+                    <span class="badge-cat-top">Làm đẹp & Bàn trang điểm</span>
+                    <img id="img-NN-ROTATING-ORGANIZER" src="images/ke_dung_my_pham.png" alt="Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-ROTATING-ORGANIZER', 'images/ke_dung_my_pham.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-ROTATING-ORGANIZER', 'images/ke_dung_my_pham_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 60 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng">Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng</h3>
+                    <p class="product-desc">Thiết kế xoay 360 độ êm ái, sức chứa 30+ chai lọ skincare, toner, serum và 20 thỏi son. Giải phóng 70% mặt bàn trang điểm.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">149,000đ</div>
+                            <div class="price-old">199,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-ROTATING-ORGANIZER')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Làm đẹp & Bàn trang điểm" data-name="gương trang điểm đèn led cảm ứng 3 màu + khay đựng phụ kiện" data-price="185000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-24%</span>
+                    <span class="badge-cat-top">Làm đẹp & Bàn trang điểm</span>
+                    <img id="img-NN-LED-MIRROR" src="images/guong_trang_diem_led.png" alt="Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-LED-MIRROR', 'images/guong_trang_diem_led.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-LED-MIRROR', 'images/guong_trang_diem_led_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 42 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện">Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện</h3>
+                    <p class="product-desc">Mặt gương kính HD siêu nét chuẩn màu makeup. 3 màu đèn LED (Trắng - Tự nhiên - Vàng ấm). Chân đế tích hợp khay trang sức mini.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">185,000đ</div>
+                            <div class="price-old">245,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-LED-MIRROR')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Làm đẹp & Bàn trang điểm" data-name="hộp đựng bông tẩy trang & tăm bông nắp gỗ chống bụi 2 ngăn" data-price="69000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-27%</span>
+                    <span class="badge-cat-top">Làm đẹp & Bàn trang điểm</span>
+                    <img id="img-NN-COTTON-BOX" src="images/hop_dung_bong_tay_trang.png" alt="Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-COTTON-BOX', 'images/hop_dung_bong_tay_trang.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-COTTON-BOX', 'images/hop_dung_bong_tay_trang_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 72 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn">Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn</h3>
+                    <p class="product-desc">Hộp mica acrylic trong suốt nắp gỗ tre tự nhiên kháng ẩm. Khe rút thông minh giúp lấy bông tẩy trang 1 giây mà không dính bụi.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">69,000đ</div>
+                            <div class="price-old">95,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-COTTON-BOX')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Làm đẹp & Bàn trang điểm" data-name="khay gương viền mạ vàng trưng bày nước hoa & son phong cách bắc âu" data-price="175000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-23%</span>
+                    <span class="badge-cat-top">Làm đẹp & Bàn trang điểm</span>
+                    <img id="img-NN-GOLD-TRAY" src="images/khay_guong.png" alt="Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-GOLD-TRAY', 'images/khay_guong.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-GOLD-TRAY', 'images/khay_guong_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 34 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu">Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu</h3>
+                    <p class="product-desc">Khay gương tráng bạc phản chiếu ánh kim loại viền mạ vàng sang trọng. Biến góc bàn làm đẹp thành không gian check-in chuẩn spa cao cấp.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">175,000đ</div>
+                            <div class="price-old">230,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-GOLD-TRAY')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Làm đẹp & Bàn trang điểm" data-name="giá treo máy sấy tóc & lược tạo kiểu dán tường (chịu lực 5kg)" data-price="79000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-28%</span>
+                    <span class="badge-cat-top">Làm đẹp & Bàn trang điểm</span>
+                    <img id="img-NN-DRYER-HANGER" src="images/gia_treo_may_say.png" alt="Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-DRYER-HANGER', 'images/gia_treo_may_say.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-DRYER-HANGER', 'images/gia_treo_may_say_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 53 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)">Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)</h3>
+                    <p class="product-desc">Dán tường siêu dính không cần khoan đục. Tích hợp móc cuộn dây điện máy sấy và cốc cắm lược chải tóc, máy duỗi uốn tóc gọn gàng.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">79,000đ</div>
+                            <div class="price-old">110,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-DRYER-HANGER')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Góc phòng gọn gàng" data-name="hộp đựng quần áo khung thép xếp chồng cửa trong suốt (66l)" data-price="129000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-23%</span>
+                    <span class="badge-cat-top">Góc phòng gọn gàng</span>
+                    <img id="img-NN-STEEL-BOX" src="images/hop_khung_quan_ao.png" alt="Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-STEEL-BOX', 'images/hop_khung_quan_ao.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-STEEL-BOX', 'images/hop_khung_quan_ao_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 46 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)">Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)</h3>
+                    <p class="product-desc">Lưu trữ chăn màn, ga gối, quần áo mùa đông. Khung thép mạ chịu tải 60kg xếp chồng nhiều tầng, mở lấy đồ cả nắp trên và cửa trước.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">129,000đ</div>
+                            <div class="price-old">169,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-STEEL-BOX')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Góc phòng gọn gàng" data-name="set 3 hộp vải chia ngăn đựng đồ lót, tất & khăn lụa" data-price="89000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-28%</span>
+                    <span class="badge-cat-top">Góc phòng gọn gàng</span>
+                    <img id="img-NN-DIVIDER-BOX" src="images/set_hop_3_ngan.png" alt="Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-DIVIDER-BOX', 'images/set_hop_3_ngan.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-DIVIDER-BOX', 'images/set_hop_3_ngan_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 65 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa">Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa</h3>
+                    <p class="product-desc">Bộ 3 kích cỡ (6 ngăn cho áo lót, 7 ngăn cho quần mỏng/váy lụa, 11 ngăn cho tất/phụ kiện). Xếp vừa khít ngăn kéo tủ đồ.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">89,000đ</div>
+                            <div class="price-old">125,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-DIVIDER-BOX')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Góc phòng gọn gàng" data-name="kệ để giày dép gấp gọn chữ x 5 tầng tiết kiệm không gian" data-price="99000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-28%</span>
+                    <span class="badge-cat-top">Góc phòng gọn gàng</span>
+                    <img id="img-NN-SHOE-RACK" src="images/ke_de_giay.png" alt="Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-SHOE-RACK', 'images/ke_de_giay.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-SHOE-RACK', 'images/ke_de_giay_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 37 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian">Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian</h3>
+                    <p class="product-desc">Mở ra dùng ngay trong 5 giây không cần ốc vít. Bề rộng chỉ 26cm, tận dụng hoàn hảo khe hẹp sau cửa ra vào của phòng trọ nhỏ.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">99,000đ</div>
+                            <div class="price-old">139,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-SHOE-RACK')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Góc phòng gọn gàng" data-name="hộp quản lý ổ cắm & giấu dây cáp điện nắp gỗ chống cháy" data-price="115000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-25%</span>
+                    <span class="badge-cat-top">Góc phòng gọn gàng</span>
+                    <img id="img-NN-CABLE-BOX" src="images/hop_dung_day.png" alt="Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-CABLE-BOX', 'images/hop_dung_day.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-CABLE-BOX', 'images/hop_dung_day_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 58 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy">Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy</h3>
+                    <p class="product-desc">Gom gọn toàn bộ ổ cắm 6-8 lỗ và mớ dây sạc rườm rà dưới sàn. Nắp gỗ tự nhiên có rãnh làm giá đỡ điện thoại/ipad khi sạc an toàn.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">115,000đ</div>
+                            <div class="price-old">155,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-CABLE-BOX')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Đời sống & Thư giãn" data-name="máy xông tinh dầu siêu âm phun sương vân gỗ đèn led 7 màu (500ml)" data-price="199000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-26%</span>
+                    <span class="badge-cat-top">Đời sống & Thư giãn</span>
+                    <img id="img-NN-AROMA-DIFFUSER" src="images/may_xong.png" alt="Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-AROMA-DIFFUSER', 'images/may_xong.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-AROMA-DIFFUSER', 'images/may_xong_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 47 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)">Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)</h3>
+                    <p class="product-desc">Khuếch tán sương siêu mịn bù ẩm cho phòng điều hòa giúp dưỡng ẩm da khi ngủ. Kết hợp đèn LED 7 màu êm dịu thay thế đèn ngủ.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">199,000đ</div>
+                            <div class="price-old">270,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-AROMA-DIFFUSER')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Đời sống & Thư giãn" data-name="đèn hoàng hôn sunset lamp 16 màu kèm remote chill phòng ngủ" data-price="119000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-27%</span>
+                    <span class="badge-cat-top">Đời sống & Thư giãn</span>
+                    <img id="img-NN-SUNSET-LAMP" src="images/den_hoang_hon.png" alt="Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-SUNSET-LAMP', 'images/den_hoang_hon.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-SUNSET-LAMP', 'images/den_hoang_hon_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 44 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ">Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ</h3>
+                    <p class="product-desc">Thấu kính pha lê xoay 360 độ tạo hiệu ứng hoàng hôn lãng mạn. Giúp góc phòng ngủ bừng sáng ấm cúng và là phụ kiện chụp ảnh makeup đỉnh cao.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">119,000đ</div>
+                            <div class="price-old">165,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-SUNSET-LAMP')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="desktop-card-col" data-cat="Đời sống & Thư giãn" data-name="thảm tròn lông cừu nhân tạo êm ái trải bàn trang điểm (d80cm)" data-price="85000">
+            <div class="desktop-card">
+                <div class="card-img-wrap">
+                    <span class="badge-discount">-29%</span>
+                    <span class="badge-cat-top">Đời sống & Thư giãn</span>
+                    <img id="img-NN-RUG-ROUND" src="images/tham_long.png" alt="Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)" class="product-thumb">
+                    <div class="img-toggle-bar">
+                        <button class="toggle-btn active" onclick="switchImg('NN-RUG-ROUND', 'images/tham_long.png', this)">Sau khi xếp</button>
+                        <button class="toggle-btn" onclick="switchImg('NN-RUG-ROUND', 'images/tham_long_before.png', this)">Trước (Bừa)</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge-atp">⚡ Sẵn giao: 38 món</span>
+                        <span class="rating">⭐ 5.0 (48)</span>
+                    </div>
+                    <h3 class="product-title" title="Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)">Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)</h3>
+                    <p class="product-desc">Thảm lông mềm mịn êm chân đường kính 80cm phong cách Bắc Âu. Đế chống trượt tuyệt đối, tạo điểm nhấn ấm cúng cho góc làm đẹp phòng trọ.</p>
+                    <div class="card-footer-box">
+                        <div>
+                            <div class="price-val">85,000đ</div>
+                            <div class="price-old">120,000đ</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm rounded-3" onclick="addToCartMock('Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)')" title="Thêm giỏ hàng">🛒</button>
+                            <button class="btn btn-sage btn-sm px-3" onclick="openDetailModal('NN-RUG-ROUND')">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="desktop-footer">
+        <div class="desktop-container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="brand-title mb-2">🌿 NẾP NHỎ</div>
+                    <p class="text-muted fs-7 mb-3">Thương hiệu D2C chuyên cung cấp các giải pháp sắp xếp bàn làm việc, góc làm đẹp và không gian phòng trọ gọn gàng, tiện nghi.</p>
+                    <div class="fs-7 text-muted">📍 Kho trung tâm: Phường Phước Long B, Quận 9 (TP. Thủ Đức), TP. Hồ Chí Minh</div>
+                    <div class="fs-7 text-muted">📞 Hỗ trợ khách hàng: 0901.234.567 (8h00 - 22h00)</div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="footer-col-title">VỀ NẾP NHỎ</div>
+                    <a href="#" class="footer-link">Câu chuyện thương hiệu</a>
+                    <a href="#" class="footer-link">Giải pháp sắp xếp phòng</a>
+                    <a href="#" class="footer-link">Bộ kit làm đẹp bàn phấn</a>
+                    <a href="#" class="footer-link">Tuyển dụng</a>
+                </div>
+                <div class="col-lg-3">
+                    <div class="footer-col-title">CHÍNH SÁCH BÁN HÀNG</div>
+                    <a href="#" class="footer-link">Chính sách vận chuyển GPS</a>
+                    <a href="#" class="footer-link">Bảo hành vỡ hỏng 1 đổi 1</a>
+                    <a href="#" class="footer-link">Chính sách thanh toán VietQR</a>
+                    <a href="#" class="footer-link">Hướng dẫn tự hủy đơn sau 24h</a>
+                </div>
+                <div class="col-lg-3">
+                    <div class="footer-col-title">THANH TOÁN TIỆN LỢI</div>
+                    <div class="d-flex gap-2 mb-2">
+                        <span class="badge bg-light text-dark border p-2">🏦 VietQR 1-Chạm</span>
+                        <span class="badge bg-light text-dark border p-2">💵 Tiền mặt (COD)</span>
+                    </div>
+                    <div class="p-3 bg-light rounded-3 border fs-7 text-muted">
+                        🔒 Hệ thống xác nhận thanh toán mã QR tự động cập nhật trạng thái đơn hàng tức thời.
+                    </div>
+                </div>
+            </div>
+            <div class="border-top mt-4 pt-3 text-center text-muted fs-7">
+                © 2026 Nếp Nhỏ — Gọn một góc, nhẹ cả ngày.
+            </div>
+        </div>
+    </footer>
+
+    <!-- PRODUCT DETAIL MODAL -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 overflow-hidden">
+                <div class="modal-header border-0 bg-light p-4 pb-2">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Chi tiết sản phẩm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 pt-2">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="rounded-3 overflow-hidden border mb-2" style="height: 280px;">
+                                <img id="modalMainImg" src="" class="w-100 h-100 object-fit-cover" alt="">
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button id="btnModalAfter" class="btn btn-sm btn-outline-dark flex-fill" onclick="setModalImg('after')">Ảnh Sau (Gọn gàng)</button>
+                                <button id="btnModalBefore" class="btn btn-sm btn-outline-secondary flex-fill" onclick="setModalImg('before')">Ảnh Trước (Bừa bộn)</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex flex-column">
+                            <span class="badge bg-success bg-opacity-10 text-success p-2 mb-2 w-fit" id="modalCat"></span>
+                            <div class="price-val fs-3 mb-1" id="modalPrice"></div>
+                            <div class="text-muted fs-7 mb-3 text-decoration-line-through" id="modalOldPrice"></div>
+                            <p class="text-muted fs-7 mb-3" id="modalDesc"></p>
+                            
+                            <div class="p-3 bg-light rounded-3 mb-3">
+                                <strong class="fs-7 text-dark d-block mb-1">📦 Bộ kit bao gồm:</strong>
+                                <ul class="m-0 ps-3 fs-7 text-muted" id="modalKitList"></ul>
+                            </div>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <button class="btn btn-outline-dark flex-fill py-2" onclick="addToCartModal()">🛒 Thêm vào giỏ</button>
+                                <button class="btn btn-sage flex-fill py-2" onclick="alert('Chuyển hướng đến màn hình thanh toán VietQR!')">Mua ngay</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const productsData = {"NN-DESK": {"id": "NN-DESK", "name": "Nếp Bàn — Desk Reset Kit", "price": 229000, "original_price": 279000, "category": "Bàn học & Làm việc", "description": "Giải pháp gom dây cáp, phân khu vật dụng nhỏ và reset góc làm việc trong 15 phút.", "kit_components": ["Khay đựng vật dụng nhỏ", "Kẹp giữ dây cáp nhiều kích cỡ", "Hộp đựng dây sạc", "Bộ nhãn dán tối giản", "Khăn lau Microfiber"], "before_img": "/images/nep_ban_before.png", "after_img": "/images/nep_ban.png", "stock_physical": 50, "stock_committed": 8}, "NN-CLOSET": {"id": "NN-CLOSET", "name": "Nếp Tủ — Closet Reset Kit", "price": 289000, "original_price": 339000, "category": "Tủ quần áo", "description": "Bộ túi gấp gọn phân loại tất, đồ lót, phụ kiện kèm túi thơm hút ẩm và checklist duy trì.", "kit_components": ["Túi/hộp gấp gọn đồ nhỏ", "Bộ phân loại vớ/đồ lót", "Bộ nhãn dán phân khu", "Túi thơm tự nhiên"], "before_img": "/images/nep_tu_before.png", "after_img": "/images/nep_tu.png", "stock_physical": 40, "stock_committed": 5}, "NN-ROOM": {"id": "NN-ROOM", "name": "Nếp Trọ — Small Room Starter Kit", "price": 399000, "original_price": 459000, "category": "Phòng ngủ & Trọ", "description": "Bộ móc dán tải trọng cao, túi treo đa năng và sơ đồ bố trí phòng 3 khu vực chuẩn gọn.", "kit_components": ["Móc dán tường siêu bám", "Túi treo đồ đa năng", "Kẹp phơi vật dụng gọn", "Hướng dẫn bố trí phòng 3 khu"], "before_img": "/images/nep_tro_before.png", "after_img": "/images/nep_tro.png", "stock_physical": 30, "stock_committed": 5}, "NN-COMBO": {"id": "NN-COMBO", "name": "Combo Nếp Bàn + Nếp Tủ (Giảm 10%)", "price": 466000, "original_price": 518000, "category": "Combo Tiết kiệm", "description": "Giải pháp toàn diện cho góc làm việc và tủ quần áo. Tiết kiệm ngay 10% khi mua kèm.", "kit_components": ["Trọn bộ Nếp Bàn", "Trọn bộ Nếp Tủ", "Thiệp chúc mừng viết tay cá nhân hóa"], "before_img": "/images/combo_neptro_neptu_before.png", "after_img": "/images/combo_neptro_neptu.png", "stock_physical": 20, "stock_committed": 1}, "NN-ROTATING-ORGANIZER": {"id": "NN-ROTATING-ORGANIZER", "name": "Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng", "price": 149000, "original_price": 199000, "category": "Làm đẹp & Bàn trang điểm", "description": "Thiết kế xoay 360 độ êm ái, sức chứa 30+ chai lọ skincare, toner, serum và 20 thỏi son. Giải phóng 70% mặt bàn trang điểm.", "kit_components": ["Trụ xoay mica acrylic kim cương chịu lực", "4 khay ngăn điều chỉnh độ cao theo chai lọ", "Khay nóc chia 16 ô cắm son và cọ trang điểm", "Vòng bi thép không gỉ trơn mượt 360°"], "before_img": "/images/ke_dung_my_pham_before.png", "after_img": "/images/ke_dung_my_pham.png", "stock_physical": 65, "stock_committed": 5}, "NN-LED-MIRROR": {"id": "NN-LED-MIRROR", "name": "Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện", "price": 185000, "original_price": 245000, "category": "Làm đẹp & Bàn trang điểm", "description": "Mặt gương kính HD siêu nét chuẩn màu makeup. 3 màu đèn LED (Trắng - Tự nhiên - Vàng ấm). Chân đế tích hợp khay trang sức mini.", "kit_components": ["Gương xoay gập 90 độ mặt kính HD cao cấp", "Dải đèn LED vòng cảm ứng chạm thông minh", "Đế khay đựng nhẫn, khuyên tai, dây chuyền", "Cáp sạc Type-C pin tích điện dùng liên tục 7 ngày"], "before_img": "/images/guong_trang_diem_led_before.png", "after_img": "/images/guong_trang_diem_led.png", "stock_physical": 45, "stock_committed": 3}, "NN-COTTON-BOX": {"id": "NN-COTTON-BOX", "name": "Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn", "price": 69000, "original_price": 95000, "category": "Làm đẹp & Bàn trang điểm", "description": "Hộp mica acrylic trong suốt nắp gỗ tre tự nhiên kháng ẩm. Khe rút thông minh giúp lấy bông tẩy trang 1 giây mà không dính bụi.", "kit_components": ["Thân hộp mica kháng bụi 2 ngăn chuẩn vệ sinh", "Nắp gỗ tre tự nhiên gioăng silicone kín khí", "Khe rút bông tẩy trang lấy nhanh tiện lợi", "Ngăn tròn đựng tăm bông riêng biệt sạch sẽ"], "before_img": "/images/hop_dung_bong_tay_trang_before.png", "after_img": "/images/hop_dung_bong_tay_trang.png", "stock_physical": 80, "stock_committed": 8}, "NN-GOLD-TRAY": {"id": "NN-GOLD-TRAY", "name": "Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu", "price": 175000, "original_price": 230000, "category": "Làm đẹp & Bàn trang điểm", "description": "Khay gương tráng bạc phản chiếu ánh kim loại viền mạ vàng sang trọng. Biến góc bàn làm đẹp thành không gian check-in chuẩn spa cao cấp.", "kit_components": ["Đáy gương pha lê tráng bạc phản chiếu lung linh", "Khung viền hợp kim mạ tĩnh điện chống hoen gỉ", "Chân đệm cao su êm ái chống trầy mặt bàn"], "before_img": "/images/khay_guong_before.png", "after_img": "/images/khay_guong.png", "stock_physical": 35, "stock_committed": 1}, "NN-DRYER-HANGER": {"id": "NN-DRYER-HANGER", "name": "Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)", "price": 79000, "original_price": 110000, "category": "Làm đẹp & Bàn trang điểm", "description": "Dán tường siêu dính không cần khoan đục. Tích hợp móc cuộn dây điện máy sấy và cốc cắm lược chải tóc, máy duỗi uốn tóc gọn gàng.", "kit_components": ["Giá đỡ máy sấy có viền silicone chống xước máy", "Cốc cắm lược & máy tạo kiểu có lỗ thoát nhiệt", "Móc gài phích cắm điện gọn gàng an toàn", "Miếng dán cường lực chống ẩm chịu lực 5kg"], "before_img": "/images/gia_treo_may_say_before.png", "after_img": "/images/gia_treo_may_say.png", "stock_physical": 55, "stock_committed": 2}, "NN-STEEL-BOX": {"id": "NN-STEEL-BOX", "name": "Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)", "price": 129000, "original_price": 169000, "category": "Góc phòng gọn gàng", "description": "Lưu trữ chăn màn, ga gối, quần áo mùa đông. Khung thép mạ chịu tải 60kg xếp chồng nhiều tầng, mở lấy đồ cả nắp trên và cửa trước.", "kit_components": ["Khung thép mạ crom trợ lực chắc chắn chống sập", "Vải Oxford 600D dày dặn chống ẩm mốc kháng bụi", "Cửa nhựa PVC trong suốt tìm đồ trong 1 giây", "Khóa kéo kép kim loại trơn tru hai chiều"], "before_img": "/images/hop_khung_quan_ao_before.png", "after_img": "/images/hop_khung_quan_ao.png", "stock_physical": 50, "stock_committed": 4}, "NN-DIVIDER-BOX": {"id": "NN-DIVIDER-BOX", "name": "Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa", "price": 89000, "original_price": 125000, "category": "Góc phòng gọn gàng", "description": "Bộ 3 kích cỡ (6 ngăn cho áo lót, 7 ngăn cho quần mỏng/váy lụa, 11 ngăn cho tất/phụ kiện). Xếp vừa khít ngăn kéo tủ đồ.", "kit_components": ["Hộp 6 ngăn cho áo ngực & khăn quàng", "Hộp 7 ngăn cho quần lót & đồ ngủ mỏng", "Hộp 11 ngăn cho tất, vớ & phụ kiện", "Chất liệu vải dệt thông thoáng kháng khuẩn chống mùi"], "before_img": "/images/set_hop_3_ngan_before.png", "after_img": "/images/set_hop_3_ngan.png", "stock_physical": 70, "stock_committed": 5}, "NN-SHOE-RACK": {"id": "NN-SHOE-RACK", "name": "Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian", "price": 99000, "original_price": 139000, "category": "Góc phòng gọn gàng", "description": "Mở ra dùng ngay trong 5 giây không cần ốc vít. Bề rộng chỉ 26cm, tận dụng hoàn hảo khe hẹp sau cửa ra vào của phòng trọ nhỏ.", "kit_components": ["Khung nhựa PP nguyên sinh dẻo dai chống gãy giòn", "5 tầng kệ chứa tối đa 10 đôi giày dép", "Khớp gập module thu gọn linh hoạt khi chuyển trọ", "Gờ chắn chống rơi bụi đất ra sàn nhà"], "before_img": "/images/ke_de_giay_before.png", "after_img": "/images/ke_de_giay.png", "stock_physical": 40, "stock_committed": 3}, "NN-CABLE-BOX": {"id": "NN-CABLE-BOX", "name": "Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy", "price": 115000, "original_price": 155000, "category": "Góc phòng gọn gàng", "description": "Gom gọn toàn bộ ổ cắm 6-8 lỗ và mớ dây sạc rườm rà dưới sàn. Nắp gỗ tự nhiên có rãnh làm giá đỡ điện thoại/ipad khi sạc an toàn.", "kit_components": ["Hộp nhựa ABS chống cháy cách điện cao cấp", "Nắp gỗ tre tự nhiên có rãnh đỡ điện thoại", "Các khe thoát khí tản nhiệt thông minh hai bên", "Khe luồn dây hai đầu gọn gàng"], "before_img": "/images/hop_dung_day_before.png", "after_img": "/images/hop_dung_day.png", "stock_physical": 60, "stock_committed": 2}, "NN-AROMA-DIFFUSER": {"id": "NN-AROMA-DIFFUSER", "name": "Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)", "price": 199000, "original_price": 270000, "category": "Đời sống & Thư giãn", "description": "Khuếch tán sương siêu mịn bù ẩm cho phòng điều hòa giúp dưỡng ẩm da khi ngủ. Kết hợp đèn LED 7 màu êm dịu thay thế đèn ngủ.", "kit_components": ["Máy khuếch tán dung tích lớn 500ml hoạt động 10h", "Remote điều khiển từ xa hẹn giờ 1h/3h/6h", "Cảm biến tự ngắt an toàn khi cạn nước", "Tặng kèm 1 lọ tinh dầu sả chanh 10ml nguyên chất"], "before_img": "/images/may_xong_before.png", "after_img": "/images/may_xong.png", "stock_physical": 50, "stock_committed": 3}, "NN-SUNSET-LAMP": {"id": "NN-SUNSET-LAMP", "name": "Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ", "price": 119000, "original_price": 165000, "category": "Đời sống & Thư giãn", "description": "Thấu kính pha lê xoay 360 độ tạo hiệu ứng hoàng hôn lãng mạn. Giúp góc phòng ngủ bừng sáng ấm cúng và là phụ kiện chụp ảnh makeup đỉnh cao.", "kit_components": ["Thấu kính pha lê truyền sáng quang học cao cấp", "Cổ đèn kim loại uốn cong 360 độ linh hoạt", "Remote điều khiển 24 phím 16 dải màu RGB", "Đế kim loại tròn đúc đặc chống ngã đổ"], "before_img": "/images/den_hoang_hon_before.png", "after_img": "/images/den_hoang_hon.png", "stock_physical": 45, "stock_committed": 1}, "NN-RUG-ROUND": {"id": "NN-RUG-ROUND", "name": "Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)", "price": 85000, "original_price": 120000, "category": "Đời sống & Thư giãn", "description": "Thảm lông mềm mịn êm chân đường kính 80cm phong cách Bắc Âu. Đế chống trượt tuyệt đối, tạo điểm nhấn ấm cúng cho góc làm đẹp phòng trọ.", "kit_components": ["Lớp lông sợi microfiber mềm mịn chống bết dính", "Đế cao su silicon hạt nổi chống trượt 100%", "Dễ dàng giặt máy hoặc vệ sinh hút bụi tiện lợi"], "before_img": "/images/tham_long_before.png", "after_img": "/images/tham_long.png", "stock_physical": 40, "stock_committed": 2}};
+        let currentModalPid = null;
+
+        function switchImg(pid, src, btn) {
+            const img = document.getElementById('img-' + pid);
+            if (img) img.src = src;
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function filterProducts() {
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+            const checkedCats = Array.from(document.querySelectorAll('input[name="cat"]:checked')).map(el => el.value);
+            const priceVal = document.querySelector('input[name="priceRange"]:checked').value;
+            
+            let count = 0;
+            document.querySelectorAll('.desktop-card-col').forEach(card => {
+                const name = card.getAttribute('data-name');
+                const cat = card.getAttribute('data-cat');
+                const price = parseInt(card.getAttribute('data-price')) || 0;
+
+                let matchSearch = !search || name.includes(search);
+                let matchCat = checkedCats.length === 0 || checkedCats.includes(cat);
+                let matchPrice = true;
+                if (priceVal === 'under150') matchPrice = price < 150000;
+                else if (priceVal === '150to300') matchPrice = price >= 150000 && price <= 300000;
+                else if (priceVal === 'above300') matchPrice = price > 300000;
+
+                if (matchSearch && matchCat && matchPrice) {
+                    card.style.display = '';
+                    count++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            document.getElementById('visibleCount').innerText = count;
+        }
+
+        function filterByCat(catName) {
+            document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('input[name="cat"]').forEach(input => {
+                input.checked = (catName !== 'all' && input.value === catName);
+            });
+            filterProducts();
+        }
+
+        function sortProducts(type) {
+            const grid = document.getElementById('productGrid');
+            const cards = Array.from(grid.children);
+            cards.sort((a, b) => {
+                const priceA = parseInt(a.getAttribute('data-price')) || 0;
+                const priceB = parseInt(b.getAttribute('data-price')) || 0;
+                if (type === 'price-asc') return priceA - priceB;
+                if (type === 'price-desc') return priceB - priceA;
+                return 0;
+            });
+            cards.forEach(card => grid.appendChild(card));
+        }
+
+        let cartTotal = 1;
+        function addToCartMock(name) {
+            cartTotal++;
+            document.getElementById('cartCountBadge').innerText = cartTotal;
+            alert('Đã thêm thành công: ' + name + ' vào giỏ hàng!');
+        }
+
+        const modalEl = new bootstrap.Modal(document.getElementById('productModal'));
+        function openDetailModal(pid) {
+            currentModalPid = pid;
+            const p = productsData[pid];
+            if (!p) return;
+            document.getElementById('modalTitle').innerText = p.name;
+            document.getElementById('modalCat').innerText = p.category;
+            document.getElementById('modalPrice').innerText = p.price.toLocaleString() + 'đ';
+            document.getElementById('modalOldPrice').innerText = p.original_price ? p.original_price.toLocaleString() + 'đ' : '';
+            document.getElementById('modalDesc').innerText = p.description;
+            
+            const kitList = document.getElementById('modalKitList');
+            kitList.innerHTML = '';
+            (p.kit_components || []).forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                kitList.appendChild(li);
+            });
+            
+            setModalImg('after');
+            modalEl.show();
+        }
+
+        function setModalImg(type) {
+            if (!currentModalPid) return;
+            const p = productsData[currentModalPid];
+            const clean = (url) => url ? (url.startsWith('/') ? url.substring(1) : url) : '';
+            const src = (type === 'after') ? clean(p.after_img) : clean(p.before_img);
+            document.getElementById('modalMainImg').src = src;
+            
+            document.getElementById('btnModalAfter').className = (type === 'after') ? 'btn btn-sm btn-dark flex-fill' : 'btn btn-sm btn-outline-dark flex-fill';
+            document.getElementById('btnModalBefore').className = (type === 'before') ? 'btn btn-sm btn-dark flex-fill' : 'btn btn-sm btn-outline-dark flex-fill';
+        }
+
+        function addToCartModal() {
+            if (currentModalPid && productsData[currentModalPid]) {
+                addToCartMock(productsData[currentModalPid].name);
+                modalEl.hide();
+            }
+        }
+    </script>
+</body>
+</html>

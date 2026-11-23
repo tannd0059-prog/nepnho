@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌿 Nếp Nhỏ — Mobile App Interface (Giao diện Điện Thoại 375px-430px)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        
+:root {
+    --bg-paper: #F7F4EE;
+    --sage-green: #7D9D7C;
+    --sage-dark: #658464;
+    --earth-brown: #8A6F5A;
+    --warm-accent: #E88D67;
+    --text-dark: #2B2B2B;
+    --text-muted: #6B7280;
+    --card-bg: #FFFFFF;
+}
+* { box-sizing: border-box; }
+body {
+    background-color: var(--bg-paper);
+    color: var(--text-dark);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.text-sage { color: var(--sage-green) !important; }
+.bg-sage { background-color: var(--sage-green) !important; color: white !important; }
+.btn-sage { background-color: var(--sage-green); color: white; border: none; font-weight: 600; border-radius: 8px; transition: 0.2s; }
+.btn-sage:hover { background-color: var(--sage-dark); color: white; }
+.price-tag { color: var(--warm-accent); font-weight: 700; }
+.badge-atp { background-color: #E8F5E9; color: #2E7D32; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+.badge-cat { background-color: #F1ECE1; color: var(--earth-brown); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+
+        /* MOBILE APP CONTAINER */
+        body {
+            max-width: 430px;
+            margin: 0 auto;
+            background: #F7F5F0;
+            padding-bottom: 74px; /* Space for bottom nav */
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* PHONE STATUS BAR SIMULATION */
+        .phone-status-bar {
+            background: #FFFFFF;
+            padding: 8px 16px 4px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #1E293B;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        /* APP HEADER */
+        .mobile-header {
+            background: #FFFFFF;
+            padding: 10px 14px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .mobile-search-pill {
+            background: #F1F5F9;
+            border-radius: 20px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #64748B;
+        }
+        .mobile-search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            font-size: 0.8rem;
+        }
+        
+        /* GPS STRIP */
+        .mobile-gps-strip {
+            background: #ECFDF5;
+            color: #065F46;
+            font-size: 0.72rem;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #A7F3D0;
+        }
+
+        /* CATEGORY STORIES / CIRCLES */
+        .story-circles-wrap {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 14px 14px 6px;
+            scrollbar-width: none;
+        }
+        .story-circles-wrap::-webkit-scrollbar { display: none; }
+        .story-item { display: flex; flex-direction: column; align-items: center; min-width: 62px; text-decoration: none; }
+        .story-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 2px solid var(--sage-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            margin-bottom: 4px;
+        }
+        .story-label { font-size: 0.68rem; font-weight: 600; color: #334155; text-align: center; line-height: 1.2; }
+
+        /* MOBILE BANNER */
+        .mobile-banner {
+            margin: 10px 14px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #7D9D7C, #5C7A5B);
+            color: #FFF;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .mobile-banner-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+        .mobile-banner-desc { font-size: 0.75rem; opacity: 0.9; margin-bottom: 10px; }
+
+        /* FLASH SALE TICKER */
+        .mobile-flash-bar {
+            margin: 6px 14px 10px;
+            background: #FEF2F2;
+            border: 1px solid #FCA5A5;
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #DC2626;
+        }
+        .countdown-box { background: #DC2626; color: #FFF; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+
+        /* 2 COLUMNS MOBILE GRID */
+        .mobile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 0 14px;
+        }
+        .mobile-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #E8ECEF;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .mobile-thumb-wrap { position: relative; height: 140px; background: #F1ECE1; }
+        .mobile-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .mobile-discount { position: absolute; top: 6px; left: 6px; background: #EF4444; color: #FFF; font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 4px; }
+        .mobile-img-switch {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            right: 4px;
+            display: flex;
+            background: rgba(0,0,0,0.6);
+            border-radius: 4px;
+            padding: 1px;
+        }
+        .mobile-img-switch span {
+            flex: 1;
+            text-align: center;
+            color: #FFF;
+            font-size: 0.6rem;
+            padding: 2px 0;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .mobile-img-switch span.active { background: #FFF; color: #1E293B; font-weight: 700; }
+        .mobile-card-content { padding: 10px; display: flex; flex-direction: column; flex-grow: 1; }
+        .mobile-title { font-size: 0.78rem; font-weight: 700; color: #1E293B; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.6em; line-height: 1.3; }
+        .mobile-atp-tag { font-size: 0.65rem; background: #E8F5E9; color: #2E7D32; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
+        .mobile-buy-btn { background: var(--sage-green); color: #FFF; border: none; font-size: 0.72rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+        .price-old { font-size: 0.7rem; color: #94A3B8; text-decoration: line-through; }
+
+        /* FIXED BOTTOM NAVIGATION BAR */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: #FFFFFF;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+        }
+        .nav-tab-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #64748B; font-size: 0.65rem; font-weight: 600; }
+        .nav-tab-item.active { color: var(--sage-green); font-weight: 700; }
+        .nav-tab-icon { font-size: 1.25rem; margin-bottom: 1px; position: relative; }
+        .badge-cart-mob { position: absolute; top: -4px; right: -8px; background: #EF4444; color: #FFF; font-size: 0.58rem; padding: 1px 4px; border-radius: 10px; font-weight: 700; }
+
+        /* BOTTOM SHEET DIALOG */
+        .bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: flex-end; justify-content: center; }
+        .bottom-sheet-overlay.active { display: flex; }
+        .bottom-sheet-box { background: #FFFFFF; width: 100%; max-width: 430px; border-radius: 20px 20px 0 0; padding: 20px; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .device-indicator { position: fixed; top: 38px; right: 10px; background: #1E293B; color: #FFF; padding: 4px 10px; border-radius: 14px; font-size: 0.68rem; font-weight: 600; z-index: 999; }
+    </style>
+</head>
+<body>
+
+    <!-- DEVICE INDICATOR -->
+    <div class="device-indicator">📲 Giao diện Mobile (375px-430px)</div>
+
+    <!-- PHONE STATUS BAR -->
+    <div class="phone-status-bar">
+        <span>09:41</span>
+        <span>5G 📶 • 100% 🔋</span>
+    </div>
+
+    <!-- APP HEADER -->
+    <header class="mobile-header">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold fs-6 text-dark">🌿 NẾP NHỎ D2C</span>
+            <div class="d-flex gap-2">
+                <span class="fs-6" onclick="alert('Không có thông báo mới!')">🔔</span>
+                <span class="fs-6" onclick="alert('Đã đồng bộ đơn hàng với số điện thoại!')">💬</span>
+            </div>
+        </div>
+        <div class="mobile-search-pill">
+            <span>🔍</span>
+            <input type="text" id="mobSearch" class="mobile-search-input" placeholder="Tìm kệ mỹ phẩm, gương LED, đèn chill..." onkeyup="filterMob()">
+        </div>
+    </header>
+
+    <!-- GPS STRIP -->
+    <div class="mobile-gps-strip">
+        <span>📍 Giao tận nơi: <strong>123 Nguyễn Văn Cừ, Q.5, TP.HCM</strong></span>
+        <span class="fw-bold" onclick="alert('Đã cập nhật tọa độ GPS chính xác!')">Đổi GPS</span>
+    </div>
+
+    <!-- CATEGORY STORIES HORIZONTAL -->
+    <div class="story-circles-wrap">
+        <div class="story-item" onclick="filterMobCat('all')">
+            <div class="story-circle">✨</div>
+            <div class="story-label">Tất cả</div>
+        </div>
+        <div class="story-item" onclick="filterMobCat('Làm đẹp & Bàn trang điểm')">
+            <div class="story-circle">💄</div>
+            <div class="story-label">Bàn phấn</div>
+        </div>
+        <div class="story-item" onclick="filterMobCat('Bàn học & Làm việc')">
+            <div class="story-circle">💻</div>
+            <div class="story-label">Bàn học</div>
+        </div>
+        <div class="story-item" onclick="filterMobCat('Tủ đồ & Quần áo')">
+            <div class="story-circle">👗</div>
+            <div class="story-label">Tủ đồ</div>
+        </div>
+        <div class="story-item" onclick="filterMobCat('Phòng ngủ & Decor chill')">
+            <div class="story-circle">🌙</div>
+            <div class="story-label">Decor chill</div>
+        </div>
+        <div class="story-item" onclick="filterMobCat('Combo giải pháp toàn diện')">
+            <div class="story-circle">🎁</div>
+            <div class="story-label">Combo</div>
+        </div>
+    </div>
+
+    <!-- MOBILE BANNER -->
+    <div class="mobile-banner">
+        <div class="mobile-banner-title">GỌN GÀNG GÓC PHÒNG TRỌ</div>
+        <div class="mobile-banner-desc">Giải phóng 70% mặt bàn với bộ kệ mica cao cấp.</div>
+        <button class="btn btn-light btn-sm rounded-pill px-3 py-1 fw-bold fs-7" onclick="alert('Mã NEPNHO20 giảm 20k đã áp dụng!')">Lấy mã giảm 20K</button>
+    </div>
+
+    <!-- FLASH SALE BAR -->
+    <div class="mobile-flash-bar">
+        <span>⚡ FLASH SALE HÔM NAY</span>
+        <div class="d-flex align-items-center gap-1">
+            <span>Kết thúc sau:</span>
+            <span class="countdown-box">02</span>:
+            <span class="countdown-box">45</span>:
+            <span class="countdown-box">18</span>
+        </div>
+    </div>
+
+    <!-- 2 COLUMNS PRODUCT GRID -->
+    <div class="mobile-grid" id="mobileGrid">
+        
+        <div class="mobile-card" data-cat="Bàn học & Làm việc" data-name="nếp bàn — desk reset kit">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-17%</span>
+                <img id="mob-img-NN-DESK" src="images/nep_ban.png" alt="Nếp Bàn — Desk Reset Kit" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-DESK', 'images/nep_ban.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-DESK', 'images/nep_ban_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Nếp Bàn — Desk Reset Kit</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">229,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 42</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">279,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Nếp Bàn — Desk Reset Kit', '229,000đ', 'images/nep_ban.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Tủ quần áo" data-name="nếp tủ — closet reset kit">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-14%</span>
+                <img id="mob-img-NN-CLOSET" src="images/nep_tu.png" alt="Nếp Tủ — Closet Reset Kit" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-CLOSET', 'images/nep_tu.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-CLOSET', 'images/nep_tu_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Nếp Tủ — Closet Reset Kit</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">289,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 35</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">339,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Nếp Tủ — Closet Reset Kit', '289,000đ', 'images/nep_tu.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Phòng ngủ & Trọ" data-name="nếp trọ — small room starter kit">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-13%</span>
+                <img id="mob-img-NN-ROOM" src="images/nep_tro.png" alt="Nếp Trọ — Small Room Starter Kit" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-ROOM', 'images/nep_tro.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-ROOM', 'images/nep_tro_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Nếp Trọ — Small Room Starter Kit</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">399,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 25</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">459,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Nếp Trọ — Small Room Starter Kit', '399,000đ', 'images/nep_tro.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Combo Tiết kiệm" data-name="combo nếp bàn + nếp tủ (giảm 10%)">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-10%</span>
+                <img id="mob-img-NN-COMBO" src="images/combo_neptro_neptu.png" alt="Combo Nếp Bàn + Nếp Tủ (Giảm 10%)" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-COMBO', 'images/combo_neptro_neptu.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-COMBO', 'images/combo_neptro_neptu_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Combo Nếp Bàn + Nếp Tủ (Giảm 10%)</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">466,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 19</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">518,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Combo Nếp Bàn + Nếp Tủ (Giảm 10%)', '466,000đ', 'images/combo_neptro_neptu.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="kệ đựng mỹ phẩm xoay 360° diamond mica đa tầng">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-25%</span>
+                <img id="mob-img-NN-ROTATING-ORGANIZER" src="images/ke_dung_my_pham.png" alt="Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-ROTATING-ORGANIZER', 'images/ke_dung_my_pham.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-ROTATING-ORGANIZER', 'images/ke_dung_my_pham_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">149,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 60</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">199,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Kệ Đựng Mỹ Phẩm Xoay 360° Diamond Mica Đa Tầng', '149,000đ', 'images/ke_dung_my_pham.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="gương trang điểm đèn led cảm ứng 3 màu + khay đựng phụ kiện">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-24%</span>
+                <img id="mob-img-NN-LED-MIRROR" src="images/guong_trang_diem_led.png" alt="Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-LED-MIRROR', 'images/guong_trang_diem_led.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-LED-MIRROR', 'images/guong_trang_diem_led_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">185,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 42</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">245,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Gương Trang Điểm Đèn LED Cảm Ứng 3 Màu + Khay Đựng Phụ Kiện', '185,000đ', 'images/guong_trang_diem_led.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="hộp đựng bông tẩy trang & tăm bông nắp gỗ chống bụi 2 ngăn">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-27%</span>
+                <img id="mob-img-NN-COTTON-BOX" src="images/hop_dung_bong_tay_trang.png" alt="Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-COTTON-BOX', 'images/hop_dung_bong_tay_trang.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-COTTON-BOX', 'images/hop_dung_bong_tay_trang_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">69,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 72</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">95,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Hộp Đựng Bông Tẩy Trang & Tăm Bông Nắp Gỗ Chống Bụi 2 Ngăn', '69,000đ', 'images/hop_dung_bong_tay_trang.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="khay gương viền mạ vàng trưng bày nước hoa & son phong cách bắc âu">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-23%</span>
+                <img id="mob-img-NN-GOLD-TRAY" src="images/khay_guong.png" alt="Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-GOLD-TRAY', 'images/khay_guong.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-GOLD-TRAY', 'images/khay_guong_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">175,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 34</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">230,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Khay Gương Viền Mạ Vàng Trưng Bày Nước Hoa & Son Phong Cách Bắc Âu', '175,000đ', 'images/khay_guong.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Làm đẹp & Bàn trang điểm" data-name="giá treo máy sấy tóc & lược tạo kiểu dán tường (chịu lực 5kg)">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-28%</span>
+                <img id="mob-img-NN-DRYER-HANGER" src="images/gia_treo_may_say.png" alt="Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-DRYER-HANGER', 'images/gia_treo_may_say.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-DRYER-HANGER', 'images/gia_treo_may_say_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">79,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 53</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">110,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Giá Treo Máy Sấy Tóc & Lược Tạo Kiểu Dán Tường (Chịu Lực 5kg)', '79,000đ', 'images/gia_treo_may_say.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Góc phòng gọn gàng" data-name="hộp đựng quần áo khung thép xếp chồng cửa trong suốt (66l)">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-23%</span>
+                <img id="mob-img-NN-STEEL-BOX" src="images/hop_khung_quan_ao.png" alt="Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-STEEL-BOX', 'images/hop_khung_quan_ao.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-STEEL-BOX', 'images/hop_khung_quan_ao_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">129,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 46</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">169,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Hộp Đựng Quần Áo Khung Thép Xếp Chồng Cửa Trong Suốt (66L)', '129,000đ', 'images/hop_khung_quan_ao.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Góc phòng gọn gàng" data-name="set 3 hộp vải chia ngăn đựng đồ lót, tất & khăn lụa">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-28%</span>
+                <img id="mob-img-NN-DIVIDER-BOX" src="images/set_hop_3_ngan.png" alt="Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-DIVIDER-BOX', 'images/set_hop_3_ngan.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-DIVIDER-BOX', 'images/set_hop_3_ngan_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">89,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 65</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">125,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Set 3 Hộp Vải Chia Ngăn Đựng Đồ Lót, Tất & Khăn Lụa', '89,000đ', 'images/set_hop_3_ngan.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Góc phòng gọn gàng" data-name="kệ để giày dép gấp gọn chữ x 5 tầng tiết kiệm không gian">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-28%</span>
+                <img id="mob-img-NN-SHOE-RACK" src="images/ke_de_giay.png" alt="Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-SHOE-RACK', 'images/ke_de_giay.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-SHOE-RACK', 'images/ke_de_giay_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">99,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 37</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">139,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Kệ Để Giày Dép Gấp Gọn Chữ X 5 Tầng Tiết Kiệm Không Gian', '99,000đ', 'images/ke_de_giay.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Góc phòng gọn gàng" data-name="hộp quản lý ổ cắm & giấu dây cáp điện nắp gỗ chống cháy">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-25%</span>
+                <img id="mob-img-NN-CABLE-BOX" src="images/hop_dung_day.png" alt="Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-CABLE-BOX', 'images/hop_dung_day.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-CABLE-BOX', 'images/hop_dung_day_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">115,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 58</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">155,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy', '115,000đ', 'images/hop_dung_day.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Đời sống & Thư giãn" data-name="máy xông tinh dầu siêu âm phun sương vân gỗ đèn led 7 màu (500ml)">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-26%</span>
+                <img id="mob-img-NN-AROMA-DIFFUSER" src="images/may_xong.png" alt="Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-AROMA-DIFFUSER', 'images/may_xong.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-AROMA-DIFFUSER', 'images/may_xong_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">199,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 47</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">270,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Máy Xông Tinh Dầu Siêu Âm Phun Sương Vân Gỗ Đèn LED 7 Màu (500ml)', '199,000đ', 'images/may_xong.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Đời sống & Thư giãn" data-name="đèn hoàng hôn sunset lamp 16 màu kèm remote chill phòng ngủ">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-27%</span>
+                <img id="mob-img-NN-SUNSET-LAMP" src="images/den_hoang_hon.png" alt="Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-SUNSET-LAMP', 'images/den_hoang_hon.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-SUNSET-LAMP', 'images/den_hoang_hon_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">119,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 44</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">165,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Đèn Hoàng Hôn Sunset Lamp 16 Màu Kèm Remote Chill Phòng Ngủ', '119,000đ', 'images/den_hoang_hon.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-card" data-cat="Đời sống & Thư giãn" data-name="thảm tròn lông cừu nhân tạo êm ái trải bàn trang điểm (d80cm)">
+            <div class="mobile-thumb-wrap">
+                <span class="mobile-discount">-29%</span>
+                <img id="mob-img-NN-RUG-ROUND" src="images/tham_long.png" alt="Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)" class="mobile-thumb">
+                <div class="mobile-img-switch">
+                    <span class="active" onclick="switchMobImg('NN-RUG-ROUND', 'images/tham_long.png', this)">Sau</span>
+                    <span onclick="switchMobImg('NN-RUG-ROUND', 'images/tham_long_before.png', this)">Trước</span>
+                </div>
+            </div>
+            <div class="mobile-card-content">
+                <h4 class="mobile-title">Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)</h4>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="price-val fs-6">85,000đ</span>
+                    <span class="mobile-atp-tag">Sẵn 38</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-old">120,000đ</span>
+                    <button class="mobile-buy-btn" onclick="openMobSheet('Thảm Tròn Lông Cừu Nhân Tạo Êm Ái Trải Bàn Trang Điểm (D80cm)', '85,000đ', 'images/tham_long.png')">🛒 Mua</button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- FIXED BOTTOM NAVIGATION BAR -->
+    <nav class="mobile-bottom-nav">
+        <a href="mobile.html" class="nav-tab-item active">
+            <span class="nav-tab-icon">🏠</span>
+            <span>Trang chủ</span>
+        </a>
+        <a href="#category" class="nav-tab-item" onclick="alert('Chuyển tới danh mục sản phẩm')">
+            <span class="nav-tab-icon">📑</span>
+            <span>Danh mục</span>
+        </a>
+        <a href="#sale" class="nav-tab-item" onclick="alert('Khám phá mã giảm giá Flash Sale')">
+            <span class="nav-tab-icon">⚡</span>
+            <span>Ưu đãi</span>
+        </a>
+        <a href="#cart" class="nav-tab-item" onclick="alert('Mở giỏ hàng di động')">
+            <span class="nav-tab-icon">🛒<span class="badge-cart-mob" id="mobBadge">1</span></span>
+            <span>Giỏ hàng</span>
+        </a>
+        <a href="#user" class="nav-tab-item" onclick="alert('Trang cá nhân & Lịch sử đơn hàng')">
+            <span class="nav-tab-icon">👤</span>
+            <span>Tôi</span>
+        </a>
+    </nav>
+
+    <!-- BOTTOM SHEET FOR QUICK BUY -->
+    <div class="bottom-sheet-overlay" id="bottomSheet" onclick="closeMobSheet(event)">
+        <div class="bottom-sheet-box" onclick="event.stopPropagation()">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0 fs-6" id="sheetTitle">Mua hàng</h5>
+                <button class="btn-close btn-sm" onclick="closeMobSheetDirect()"></button>
+            </div>
+            <div class="d-flex gap-3 mb-3">
+                <img id="sheetImg" src="" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px;" alt="">
+                <div>
+                    <div class="price-val fs-5" id="sheetPrice"></div>
+                    <span class="badge bg-success bg-opacity-10 text-success fs-7">Sẵn sàng giao tận cửa</span>
+                </div>
+            </div>
+            <button class="btn btn-sage w-100 py-2 fw-bold mb-2" onclick="confirmMobBuy()">Xác nhận mua ngay (VietQR 1-Chạm)</button>
+            <button class="btn btn-outline-dark w-100 py-2 fs-7" onclick="closeMobSheetDirect()">Để xem thêm</button>
+        </div>
+    </div>
+
+    <script>
+        function switchMobImg(pid, src, span) {
+            const img = document.getElementById('mob-img-' + pid);
+            if (img) img.src = src;
+            const parent = span.parentElement;
+            parent.querySelectorAll('span').forEach(s => s.classList.remove('active'));
+            span.classList.add('active');
+        }
+
+        function filterMobCat(cat) {
+            document.querySelectorAll('.mobile-card').forEach(card => {
+                const cardCat = card.getAttribute('data-cat');
+                card.style.display = (cat === 'all' || cardCat === cat) ? '' : 'none';
+            });
+        }
+
+        function filterMob() {
+            const s = document.getElementById('mobSearch').value.toLowerCase().trim();
+            document.querySelectorAll('.mobile-card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                card.style.display = (!s || name.includes(s)) ? '' : 'none';
+            });
+        }
+
+        function openMobSheet(name, price, img) {
+            document.getElementById('sheetTitle').innerText = name;
+            document.getElementById('sheetPrice').innerText = price;
+            document.getElementById('sheetImg').src = img;
+            document.getElementById('bottomSheet').classList.add('active');
+        }
+
+        function closeMobSheet(e) {
+            document.getElementById('bottomSheet').classList.remove('active');
+        }
+
+        function closeMobSheetDirect() {
+            document.getElementById('bottomSheet').classList.remove('active');
+        }
+
+        let mobCart = 1;
+        function confirmMobBuy() {
+            mobCart++;
+            document.getElementById('mobBadge').innerText = mobCart;
+            alert('Đã tạo đơn hàng thành công! Vui lòng quét mã VietQR tự động.');
+            closeMobSheetDirect();
+        }
+    </script>
+</body>
+</html>

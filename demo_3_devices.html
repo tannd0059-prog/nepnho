@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Nếp Nhỏ — Bộ Trình Diễn 3 Giao Diện: Desktop • Tablet • Mobile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bar-bg: #1E293B;
+            --accent: #7D9D7C;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0F172A; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* TOP CONTROLLER BAR */
+        .showcase-nav {
+            background: var(--bar-bg);
+            color: #FFFFFF;
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            z-index: 100;
+        }
+        .showcase-brand { font-weight: 800; font-size: 1.15rem; color: #FFF; display: flex; align-items: center; gap: 8px; }
+        .mode-btn-group { display: flex; background: #0F172A; padding: 4px; border-radius: 10px; border: 1px solid #334155; }
+        .mode-btn {
+            background: transparent;
+            color: #94A3B8;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .mode-btn:hover { color: #FFF; }
+        .mode-btn.active { background: var(--accent); color: #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+
+        /* VIEWPORT WRAPPER */
+        .viewport-wrapper {
+            flex-grow: 1;
+            background: #0B1120;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        /* DEVICE FRAMES */
+        .device-frame {
+            background: #FFFFFF;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 1. DESKTOP MODE */
+        .mode-desktop-view {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        /* 2. TABLET MODE (IPAD) */
+        .mode-tablet-view {
+            width: 820px;
+            height: 92vh;
+            border-radius: 28px;
+            border: 12px solid #1E293B;
+            box-shadow: 0 0 0 2px #475569;
+        }
+
+        /* 3. MOBILE MODE (IPHONE) */
+        .mode-mobile-view {
+            width: 410px;
+            height: 92vh;
+            border-radius: 44px;
+            border: 12px solid #1E293B;
+            box-shadow: 0 0 0 2px #475569;
+            position: relative;
+        }
+        .notch-bar {
+            width: 120px;
+            height: 24px;
+            background: #1E293B;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 14px;
+            border-bottom-right-radius: 14px;
+            z-index: 10;
+        }
+
+        /* 4. ALL 3 SIDE-BY-SIDE MODE */
+        .mode-all-view {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            height: 94%;
+            width: 100%;
+            justify-content: center;
+        }
+        .side-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+        }
+        .side-title {
+            color: #94A3B8;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .side-frame-desktop {
+            width: 620px;
+            height: 88%;
+            border-radius: 12px;
+            border: 8px solid #1E293B;
+        }
+        .side-frame-tablet {
+            width: 440px;
+            height: 88%;
+            border-radius: 20px;
+            border: 8px solid #1E293B;
+        }
+        .side-frame-mobile {
+            width: 320px;
+            height: 88%;
+            border-radius: 28px;
+            border: 8px solid #1E293B;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP CONTROL BAR -->
+    <div class="showcase-nav">
+        <div class="showcase-brand">
+            <span>🌿</span>
+            <span>NẾP NHỎ D2C • BỘ 3 GIAO DIỆN TMĐT</span>
+        </div>
+
+        <div class="mode-btn-group">
+            <button class="mode-btn active" onclick="setMode('desktop')">
+                <span>🖥️</span> Desktop (&gt;1200px)
+            </button>
+            <button class="mode-btn" onclick="setMode('tablet')">
+                <span>📱</span> Tablet (iPad)
+            </button>
+            <button class="mode-btn" onclick="setMode('mobile')">
+                <span>📲</span> Mobile (iPhone)
+            </button>
+            <button class="mode-btn" onclick="setMode('all')">
+                <span>🔲</span> Xem cả 3 cùng lúc (Side-by-Side)
+            </button>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="desktop.html" target="_blank" class="btn btn-sm btn-outline-light">Mở Desktop ↗</a>
+            <a href="tablet.html" target="_blank" class="btn btn-sm btn-outline-light">Mở Tablet ↗</a>
+            <a href="mobile.html" target="_blank" class="btn btn-sm btn-outline-light">Mở Mobile ↗</a>
+        </div>
+    </div>
+
+    <!-- MAIN VIEWPORT CONTAINER -->
+    <div class="viewport-wrapper" id="viewport">
+        <!-- Rendered via JS -->
+    </div>
+
+    <script>
+        const viewport = document.getElementById('viewport');
+
+        function setMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            event.target.closest('.mode-btn').classList.add('active');
+
+            if (mode === 'desktop') {
+                viewport.innerHTML = `
+                    <div class="device-frame mode-desktop-view">
+                        <iframe src="desktop.html"></iframe>
+                    </div>
+                `;
+            } else if (mode === 'tablet') {
+                viewport.innerHTML = `
+                    <div class="device-frame mode-tablet-view">
+                        <iframe src="tablet.html"></iframe>
+                    </div>
+                `;
+            } else if (mode === 'mobile') {
+                viewport.innerHTML = `
+                    <div class="device-frame mode-mobile-view">
+                        <div class="notch-bar"></div>
+                        <iframe src="mobile.html"></iframe>
+                    </div>
+                `;
+            } else if (mode === 'all') {
+                viewport.innerHTML = `
+                    <div class="mode-all-view">
+                        <div class="side-col">
+                            <div class="side-title">🖥️ 1. Giao diện Desktop (1440 x 900)</div>
+                            <div class="device-frame side-frame-desktop">
+                                <iframe src="desktop.html"></iframe>
+                            </div>
+                        </div>
+                        <div class="side-col">
+                            <div class="side-title">📱 2. Giao diện Tablet (820 x 1180)</div>
+                            <div class="device-frame side-frame-tablet">
+                                <iframe src="tablet.html"></iframe>
+                            </div>
+                        </div>
+                        <div class="side-col">
+                            <div class="side-title">📲 3. Giao diện Mobile (393 x 852)</div>
+                            <div class="device-frame side-frame-mobile">
+                                <iframe src="mobile.html"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize with Desktop view
+        setMode('desktop');
+    </script>
+</body>
+</html>

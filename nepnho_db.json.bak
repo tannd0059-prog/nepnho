@@ -1,0 +1,161 @@
+{
+    "users": {
+        "admin@nepnho.vn": {
+            "email": "admin@nepnho.vn",
+            "password": "scrypt:32768:8:1$Rmc5JqGOhliuDQpH$a188efd0f032266ab1d62d0f8150da1a4bc6dde60a2dac9fa10975566e8b8d27a269382d7958399907a599a879bde3681561000cb61021a3907c730ac4aba767",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "address": "Kho Trung Tâm Nếp Nhỏ, TP.HCM",
+            "role": "admin"
+        },
+        "tan@gmail.com": {
+            "email": "tan@gmail.com",
+            "password": "scrypt:32768:8:1$ffWnlS20XO4UFS2A$5f74384942b38e499e53cdb5aa3e80777e54008ab20188e8fbaac0da76c70a90fd35361a143018a0fa149ebf8c333af68f500285f68a5c5e397de673269f1610",
+            "fullname": "Nguyễn Văn Tân",
+            "phone": "0901234567",
+            "address": "123 Nguyễn Văn Cừ, Quận 5, TP. Hồ Chí Minh",
+            "role": "customer"
+        },
+        "nyngu99@gmail.com": {
+            "email": "nyngu99@gmail.com",
+            "password": "scrypt:32768:8:1$w25oVdBpKK09OcL3$e5c00a3824d94199e13434203439d8e1d7a943a05ca20ff2e5702fd84188a9cd9274472f988a0cc2508d2d6a95e39071eefc27ed68557eac7d23de664cf5798f",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "address": "18 đường 297 p.Phước Long",
+            "role": "customer"
+        }
+    },
+    "products": {
+        "NN-DESK": {
+            "id": "NN-DESK",
+            "name": "Nếp Bàn — Desk Reset Kit",
+            "price": 229000,
+            "original_price": 279000,
+            "category": "Bàn học & Làm việc",
+            "description": "Giải pháp gom dây cáp, phân khu vật dụng nhỏ và reset góc làm việc trong 15 phút.",
+            "kit_components": [
+                "Khay đựng vật dụng nhỏ",
+                "Kẹp giữ dây cáp nhiều kích cỡ",
+                "Hộp đựng dây sạc",
+                "Bộ nhãn dán tối giản",
+                "Khăn lau Microfiber"
+            ],
+            "before_img": "https://images.unsplash.com/photo-1585336261026-61e778a29b28?w=600",
+            "after_img": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600",
+            "stock_physical": 50,
+            "stock_committed": 5
+        },
+        "NN-CLOSET": {
+            "id": "NN-CLOSET",
+            "name": "Nếp Tủ — Closet Reset Kit",
+            "price": 289000,
+            "original_price": 339000,
+            "category": "Tủ quần áo",
+            "description": "Bộ túi gấp gọn phân loại tất, đồ lót, phụ kiện kèm túi thơm hút ẩm và checklist duy trì.",
+            "kit_components": [
+                "Túi/hộp gấp gọn đồ nhỏ",
+                "Bộ phân loại vớ/đồ lót",
+                "Bộ nhãn dán phân khu",
+                "Túi thơm tự nhiên"
+            ],
+            "before_img": "https://images.unsplash.com/photo-1558882224-dda166733046?w=600",
+            "after_img": "https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=600",
+            "stock_physical": 40,
+            "stock_committed": 4
+        },
+        "NN-ROOM": {
+            "id": "NN-ROOM",
+            "name": "Nếp Trọ — Small Room Starter Kit",
+            "price": 399000,
+            "original_price": 459000,
+            "category": "Phòng ngủ & Trọ",
+            "description": "Bộ móc dán tải trọng cao, túi treo đa năng và sơ đồ bố trí phòng 3 khu vực chuẩn gọn.",
+            "kit_components": [
+                "Móc dán tường siêu bám",
+                "Túi treo đồ đa năng",
+                "Kẹp phơi vật dụng gọn",
+                "Hướng dẫn bố trí phòng 3 khu"
+            ],
+            "before_img": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600",
+            "after_img": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600",
+            "stock_physical": 30,
+            "stock_committed": 5
+        },
+        "NN-COMBO": {
+            "id": "NN-COMBO",
+            "name": "Combo Nếp Bàn + Nếp Tủ (Giảm 10%)",
+            "price": 466000,
+            "original_price": 518000,
+            "category": "Combo Tiết kiệm",
+            "description": "Giải pháp toàn diện cho góc làm việc và tủ quần áo. Tiết kiệm ngay 10% khi mua kèm.",
+            "kit_components": [
+                "Trọn bộ Nếp Bàn",
+                "Trọn bộ Nếp Tủ",
+                "Thiệp chúc mừng viết tay cá nhân hóa"
+            ],
+            "before_img": "https://images.unsplash.com/photo-1585336261026-61e778a29b28?w=600",
+            "after_img": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600",
+            "stock_physical": 20,
+            "stock_committed": 1
+        }
+    },
+    "orders": {
+        "822605": {
+            "id": "822605",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "email": "nyngu99@gmail.com",
+            "address": "18 đường 297 p.Phước Long ",
+            "payment_method": "COD",
+            "total": 289000,
+            "items": [
+                {
+                    "id": "NN-CLOSET",
+                    "name": "Nếp Tủ — Closet Reset Kit",
+                    "price": 289000,
+                    "qty": 1
+                }
+            ],
+            "status": "WMS Đóng gói (Pick & Pack)",
+            "created_at": "14:39 18/10/2026"
+        },
+        "633092": {
+            "id": "633092",
+            "fullname": "Nguyễn Duy Tân",
+            "phone": "0368688548",
+            "email": "nyngu99@gmail.com",
+            "address": "18 đường 297 p.Phước Long",
+            "payment_method": "VIETQR",
+            "total": 289000,
+            "items": [
+                {
+                    "id": "NN-CLOSET",
+                    "name": "Nếp Tủ — Closet Reset Kit",
+                    "price": 289000,
+                    "qty": 1
+                }
+            ],
+            "status": "WMS Đóng gói (Pick & Pack)",
+            "created_at": "14:43 18/10/2026"
+        },
+        "623994": {
+            "id": "623994",
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "email": "admin@nepnho.vn",
+            "address": "Kho Trung Tâm Nếp Nhỏ, TP.HCM",
+            "payment_method": "VIETQR",
+            "total": 399000,
+            "items": [
+                {
+                    "id": "NN-ROOM",
+                    "name": "Nếp Trọ — Small Room Starter Kit",
+                    "price": 399000,
+                    "qty": 1
+                }
+            ],
+            "status": "Chờ xác nhận",
+            "created_at": "12:58 19/10/2026"
+        }
+    }
+}
