@@ -1846,8 +1846,8 @@ AUTH_TEMPLATE_CONTENT = """
                     <form action="/login" method="POST">
                         <input type="hidden" name="next" value="{{ next_url or '/' }}">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark">Email đăng nhập *</label>
-                            <input type="email" id="loginEmail" name="email" class="form-control form-control-lg fs-6" required placeholder="admin@nepnho.vn">
+                            <label class="form-label small fw-bold text-dark">Email hoặc Số điện thoại đăng nhập *</label>
+                            <input type="text" id="loginEmail" name="email" class="form-control form-control-lg fs-6" required placeholder="Nhập Email hoặc SĐT (Ví dụ: 0368688548)">
                         </div>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
@@ -2140,29 +2140,58 @@ def product_detail(pid):
 def login():
     next_url = request.args.get('next') or request.form.get('next') or '/'
     if request.method == 'POST':
-        email = request.form.get('email')
+        login_input = (request.form.get('email') or request.form.get('login_id') or '').strip()
         password = request.form.get('password')
-        user = DB['users'].get(email)
+        
+        # Tìm tài khoản qua Email HOẶC Số điện thoại
+        clean_input = login_input.lower()
+        clean_phone = re.sub(r'[^0-9]', '', login_input)
+        
+        user = None
+        for u in DB['users'].values():
+            u_email = (u.get('email') or '').strip().lower()
+            u_phone = re.sub(r'[^0-9]', '', str(u.get('phone') or ''))
+            
+            # Khớp Email
+            if clean_input and clean_input == u_email:
+                user = u
+                break
+            # Khớp Số điện thoại
+            if clean_phone and len(clean_phone) >= 9 and clean_phone == u_phone:
+                user = u
+                break
+                
         if user and check_password_hash(user['password'], password):
             session['user'] = user
             flash(f"Chào mừng {user['fullname']}!", "success")
             return redirect(next_url)
-        flash("Email hoặc mật khẩu không đúng!", "danger")
+        flash("Email, Số điện thoại hoặc mật khẩu không chính xác!", "danger")
     return render_template_string(LOGIN_HTML, next_url=next_url, active_tab='login')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     next_url = request.args.get('next') or request.form.get('next') or '/'
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = (request.form.get('email') or '').strip().lower()
+        phone = (request.form.get('phone') or '').strip()
+        clean_phone = re.sub(r'[^0-9]', '', phone)
+        
         if email in DB['users']:
-            flash("Email đã tồn tại!", "warning")
+            flash("Email này đã được sử dụng!", "warning")
             return redirect(f'/register?next={next_url}')
+
+        # Kiểm tra số điện thoại đã tồn tại chưa
+        for u in DB['users'].values():
+            u_phone = re.sub(r'[^0-9]', '', str(u.get('phone') or ''))
+            if clean_phone and len(clean_phone) >= 9 and clean_phone == u_phone:
+                flash(f"Số điện thoại {phone} đã được đăng ký tài khoản trước đó!", "warning")
+                return redirect(f'/register?next={next_url}')
+
         new_user = {
             'email': email,
             'password': generate_password_hash(request.form.get('password')),
             'fullname': request.form.get('fullname'),
-            'phone': request.form.get('phone'),
+            'phone': phone,
             'address': request.form.get('address'),
             'role': 'customer'
         }
