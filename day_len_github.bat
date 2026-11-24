@@ -10,9 +10,9 @@ echo Bước 1: Bạn vào https://github.com/new và tạo 1 repository mới
 echo         (Ví dụ đặt tên là: nepnho-d2c)
 echo.
 echo Bước 2: Dán đường link git repository của bạn vào bên dưới:
-echo         (Ví dụ: https://github.com/tannd0059/nepnho-d2c.git)
+echo         (Ví dụ: https://github.com/tannd0059-prog/nepnho-d2c.git)
 echo.
-set /p REPO_URL="👉 Nhập link GitHub của bạn: "
+set /p REPO_URL="https://github.com/tannd0059-prog/nepnho.git "
 
 if "%REPO_URL%"=="" (
     echo [X] Bạn chưa nhập link GitHub! Vui lòng chạy lại.
