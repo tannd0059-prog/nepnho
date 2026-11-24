@@ -316,18 +316,18 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
                 </a>
 
                 {% if current_user %}
-                <div class="dropdown d-inline-block">
-                    <button class="btn btn-light border rounded-pill px-3 py-2 text-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size: 0.85rem;">
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/profile" class="btn btn-light border rounded-pill px-3 py-2 text-dark text-decoration-none" style="font-size: 0.85rem;" title="Xem thông tin cá nhân & đơn hàng">
                         👤 <strong>{{ current_user['fullname'] }}</strong>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-                        <li><a class="dropdown-item py-2" href="/profile">📋 Đơn Hàng & Tài Khoản</a></li>
-                        {% if current_user.get('role') == 'admin' %}
-                        <li><a class="dropdown-item py-2 text-primary fw-bold" href="/admin">⚙️ Quản Trị Hệ Thống</a></li>
-                        {% endif %}
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li><a class="dropdown-item py-2 text-danger" href="/logout">🚪 Đăng xuất</a></li>
-                    </ul>
+                    </a>
+                    {% if current_user.get('role') == 'admin' %}
+                    <a href="/admin" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold text-decoration-none" style="font-size: 0.85rem;" title="Trang quản trị">
+                        ⚙️ Quản Trị
+                    </a>
+                    {% endif %}
+                    <a href="/logout" class="btn btn-outline-danger rounded-pill px-3 py-2 fw-bold text-decoration-none" style="font-size: 0.85rem;" title="Bấm để đăng xuất">
+                        🚪 Đăng xuất
+                    </a>
                 </div>
                 {% else %}
                 <div class="d-flex align-items-center gap-2">
@@ -595,6 +595,7 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
             cards.forEach(card => grid.appendChild(card));
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 """
@@ -680,7 +681,10 @@ TABLET_TEMPLATE = """<!DOCTYPE html>
             <a href="/profile" class="btn btn-light btn-sm border rounded-pill px-2 py-1 text-dark text-decoration-none" title="Trang cá nhân">
                 👤 <strong style="font-size: 0.76rem;">{{ current_user['fullname'] | truncate(12) }}</strong>
             </a>
-            <a href="/logout" class="btn btn-outline-danger btn-sm rounded-pill px-2 py-1" style="font-size: 0.72rem;">Đăng xuất</a>
+            {% if current_user.get('role') == 'admin' %}
+            <a href="/admin" class="btn btn-outline-primary btn-sm rounded-pill px-2 py-1" style="font-size: 0.72rem; font-weight: 600;">⚙️ Admin</a>
+            {% endif %}
+            <a href="/logout" class="btn btn-outline-danger btn-sm rounded-pill px-2 py-1" style="font-size: 0.72rem; font-weight: 600;">🚪 Đăng xuất</a>
             {% else %}
             <a href="/login" class="btn btn-outline-dark btn-sm rounded-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">Đăng nhập</a>
             <a href="/register" class="btn btn-sage btn-sm rounded-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">Đăng ký</a>
@@ -787,6 +791,7 @@ TABLET_TEMPLATE = """<!DOCTYPE html>
             });
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 """
@@ -900,6 +905,14 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
                 {% if current_user %}
                 <a href="/profile" class="badge bg-light text-dark border text-decoration-none px-2 py-1" style="font-size: 0.72rem;">
                     👤 {{ current_user['fullname'] | truncate(10) }}
+                </a>
+                {% if current_user.get('role') == 'admin' %}
+                <a href="/admin" class="badge bg-primary text-white text-decoration-none px-2 py-1" style="font-size: 0.72rem;">
+                    ⚙️ Admin
+                </a>
+                {% endif %}
+                <a href="/logout" class="badge bg-danger bg-opacity-10 text-danger border border-danger text-decoration-none px-2 py-1" style="font-size: 0.72rem; font-weight: 700;">
+                    Đăng xuất
                 </a>
                 {% else %}
                 <a href="/login" class="badge bg-success bg-opacity-10 text-success border border-success text-decoration-none px-2 py-1" style="font-size: 0.72rem; font-weight: 700;">
@@ -1022,6 +1035,10 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
         <a href="/profile" class="nav-tab-item">
             <span class="nav-tab-icon">👤</span>
             <span>Tài khoản</span>
+        </a>
+        <a href="/logout" class="nav-tab-item text-danger">
+            <span class="nav-tab-icon">🚪</span>
+            <span>Đăng xuất</span>
         </a>
         {% else %}
         <a href="/login" class="nav-tab-item">

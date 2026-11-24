@@ -406,18 +406,18 @@ BASE_HTML = """
                         {% endif %}
                     </a>
                     {% if current_user %}
-                    <div class="dropdown">
-                        <button class="btn btn-sage dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/profile" class="btn btn-sage text-white text-decoration-none">
                             👤 {{ current_user['fullname'] }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow">
-                            <li><a class="dropdown-item" href="/profile">Trang cá nhân & Đơn hàng</a></li>
-                            {% if current_user.get('role') == 'admin' %}
-                            <li><a class="dropdown-item text-danger fw-bold" href="/admin">⚙️ Trang Quản Trị Admin</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="/logout">Đăng xuất</a></li>
-                        </ul>
+                        </a>
+                        {% if current_user.get('role') == 'admin' %}
+                        <a href="/admin" class="btn btn-outline-primary fw-bold text-decoration-none">
+                            ⚙️ Quản Trị
+                        </a>
+                        {% endif %}
+                        <a href="/logout" class="btn btn-outline-danger fw-bold text-decoration-none">
+                            🚪 Đăng xuất
+                        </a>
                     </div>
                     {% else %}
                     <a href="/login" class="btn btn-outline-secondary">Đăng nhập</a>
@@ -2005,9 +2005,15 @@ PROFILE_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
 # BẢNG QUẢN TRỊ ADMIN (HIỂN THỊ LINK BẢN ĐỒ GOOGLE MAPS CHO SHIPPER)
 # ==============================================================================
 ADMIN_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold text-danger mb-0">⚙️ BẢNG QUẢN TRỊ ADMIN — NẾP NHỎ D2C</h3>
-    <span class="badge bg-dark fs-6 px-3 py-2">Quyền: Quản trị viên</span>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <h3 class="fw-bold text-danger mb-0">⚙️ BẢNG QUẢN TRỊ ADMIN — NẾP NHỎ D2C</h3>
+        <span class="badge bg-dark fs-6 px-3 py-2">Quyền: Quản trị viên</span>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/" class="btn btn-outline-dark fw-bold">🏠 Về Cửa Hàng</a>
+        <a href="/logout" class="btn btn-danger fw-bold px-3">🚪 Đăng Xuất Admin</a>
+    </div>
 </div>
 
 <div class="row g-3 mb-4">
