@@ -4,6 +4,7 @@ import random
 import string
 import time
 import re
+import threading
 from datetime import datetime
 from flask import Flask, render_template_string, request, redirect, url_for, session, jsonify, flash, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,9 +12,10 @@ from templates_responsive import DESKTOP_TEMPLATE, TABLET_TEMPLATE, MOBILE_TEMPL
 
 
 app = Flask(__name__)
-app.secret_key = "nepnho_d2c_full_system_key_2026"
+app.secret_key = os.environ.get("SECRET_KEY", "nepnho_d2c_full_system_key_2026")
 
 DATA_FILE = "nepnho_db.json"
+DB_LOCK = threading.RLock()
 
 # ==============================================================================
 # CẤU HÌNH TÀI KHOẢN NGÂN HÀNG THANH TOÁN (VIETQR TỰ ĐỘNG)
@@ -280,8 +282,22 @@ def load_data():
     return db
 
 def save_data(db):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(db, f, ensure_ascii=False, indent=4)
+    with DB_LOCK:
+        tmp_file = f"{DATA_FILE}.tmp"
+        with open(tmp_file, 'w', encoding='utf-8') as f:
+            json.dump(db, f, ensure_ascii=False, indent=4)
+        os.replace(tmp_file, DATA_FILE)
+
+
+def _get_available_stock(product):
+    return max(0, int(product.get('stock_physical', 0)) - int(product.get('stock_committed', 0)))
+
+
+def _safe_next_url(next_url):
+    if next_url and isinstance(next_url, str) and next_url.startswith('/') and not next_url.startswith('//'):
+        return next_url
+    return '/'
+
 
 DB = load_data()
 
@@ -292,31 +308,32 @@ def check_and_cancel_expired_orders():
     now_ts = time.time()
     has_changes = False
 
-    for oid, o in DB['orders'].items():
-        if o.get('payment_method') == 'VIETQR' and o.get('payment_status') == 'Chờ thanh toán':
-            expires_at = o.get('expires_at_timestamp')
-            if not expires_at:
-                try:
-                    dt = datetime.strptime(o.get('created_at', ''), "%H:%M %d/%m/%Y")
-                    expires_at = dt.timestamp() + (24 * 3600)
-                    o['expires_at_timestamp'] = expires_at
+    with DB_LOCK:
+        for oid, o in DB['orders'].items():
+            if o.get('payment_method') == 'VIETQR' and o.get('payment_status') == 'Chờ thanh toán':
+                expires_at = o.get('expires_at_timestamp')
+                if not expires_at:
+                    try:
+                        dt = datetime.strptime(o.get('created_at', ''), "%H:%M %d/%m/%Y")
+                        expires_at = dt.timestamp() + (24 * 3600)
+                        o['expires_at_timestamp'] = expires_at
+                        has_changes = True
+                    except Exception:
+                        continue
+
+                if now_ts >= expires_at:
+                    o['status'] = 'Đã tự hủy (Quá hạn 24h)'
+                    o['payment_status'] = 'Đã hết hạn thanh toán'
+                    for item in o.get('items', []):
+                        pid = item.get('id')
+                        if pid in DB['products']:
+                            DB['products'][pid]['stock_committed'] = max(
+                                0, DB['products'][pid]['stock_committed'] - item.get('qty', 0)
+                            )
                     has_changes = True
-                except Exception:
-                    continue
 
-            if now_ts >= expires_at:
-                o['status'] = 'Đã tự hủy (Quá hạn 24h)'
-                o['payment_status'] = 'Đã hết hạn thanh toán'
-                for item in o.get('items', []):
-                    pid = item.get('id')
-                    if pid in DB['products']:
-                        DB['products'][pid]['stock_committed'] = max(
-                            0, DB['products'][pid]['stock_committed'] - item.get('qty', 0)
-                        )
-                has_changes = True
-
-    if has_changes:
-        save_data(DB)
+        if has_changes:
+            save_data(DB)
 
 @app.before_request
 def before_request_hook():
@@ -1813,8 +1830,13 @@ TRACKING_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
         </div>
     </div>
 
-    <div class="text-center mt-3">
+    <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
         <a href="/" class="btn btn-outline-dark">← Quay về Trang chủ</a>
+        {% if current_user and (current_user.get('email') == order.get('email') or current_user.get('role') == 'admin') and order.get('status') in ['Chờ thanh toán VietQR', 'Chờ xác nhận (COD)'] %}
+        <form action="/cancel-order/{{ order['id'] }}" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn hàng #{{ order[\'id\'] }}?');">
+            <button type="submit" class="btn btn-outline-danger">❌ Hủy đơn hàng</button>
+        </form>
+        {% endif %}
     </div>
 </div>
 """)
@@ -1990,7 +2012,16 @@ PROFILE_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                             <td class="small">{{ order['created_at'] }}</td>
                             <td class="text-danger fw-bold">{{ "{:,}".format(order['total']) }}đ</td>
                             <td><span class="badge bg-warning text-dark">{{ order['status'] }}</span></td>
-                            <td><a href="/order-status/{{ order['id'] }}" class="btn btn-sm btn-outline-dark">Xem OMS</a></td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="/order-status/{{ order['id'] }}" class="btn btn-sm btn-outline-dark">Xem OMS</a>
+                                    {% if order['status'] in ['Chờ thanh toán VietQR', 'Chờ xác nhận (COD)'] %}
+                                    <form action="/cancel-order/{{ order['id'] }}" method="POST" onsubmit="return confirm('Hủy đơn hàng #{{ order[\'id\'] }}?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Hủy</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -2096,9 +2127,115 @@ ADMIN_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                                 <option value="Đã bàn giao 3PL (GHTK/GHN)" {% if o['status']=='Đã bàn giao 3PL (GHTK/GHN)' %}selected{% endif %}>🚚 Đang giao 3PL</option>
                                 <option value="Giao thành công (POD)" {% if o['status']=='Giao thành công (POD)' %}selected{% endif %}>🏠 Giao thành công</option>
                                 <option value="Đã tự hủy (Quá hạn 24h)" {% if o['status']=='Đã tự hủy (Quá hạn 24h)' %}selected{% endif %}>❌ Đã tự hủy (24h)</option>
+                                <option value="Khách hàng đã hủy" {% if o['status']=='Khách hàng đã hủy' %}selected{% endif %}>🚫 Khách hàng đã hủy</option>
                             </select>
                             <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
                         </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- QUẢN LÝ SẢN PHẨM & TỒN KHO ATP -->
+<div class="card p-3 border-0 shadow-sm bg-white mb-4 rounded-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="fw-bold mb-0 text-dark">🏷️ Quản Lý Sản Phẩm & Tồn Kho (ATP)</h5>
+        <button class="btn btn-sm btn-sage fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#addProductForm">
+            + Thêm Sản Phẩm Mới
+        </button>
+    </div>
+
+    <div class="collapse mb-4" id="addProductForm">
+        <form action="/admin/add-product" method="POST" class="p-3 bg-light rounded-3 border">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Mã SKU *</label>
+                    <input type="text" name="id" class="form-control form-control-sm" required placeholder="VD: NN-NEW-01">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold">Tên sản phẩm *</label>
+                    <input type="text" name="name" class="form-control form-control-sm" required placeholder="Tên sản phẩm...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Danh mục *</label>
+                    <input type="text" name="category" class="form-control form-control-sm" required value="Làm đẹp & Bàn trang điểm">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Giá bán (đ) *</label>
+                    <input type="number" name="price" class="form-control form-control-sm" required min="1000" value="99000">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Giá gốc (đ)</label>
+                    <input type="number" name="original_price" class="form-control form-control-sm" min="0" value="129000">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Tồn kho vật lý *</label>
+                    <input type="number" name="stock_physical" class="form-control form-control-sm" required min="0" value="50">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Ảnh Sau (URL/Path)</label>
+                    <input type="text" name="after_img" class="form-control form-control-sm" value="/images/nep_ban.png">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Ảnh Trước (URL/Path)</label>
+                    <input type="text" name="before_img" class="form-control form-control-sm" value="/images/nep_ban_before.png">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small fw-bold">Mô tả ngắn</label>
+                    <input type="text" name="description" class="form-control form-control-sm" placeholder="Mô tả sản phẩm...">
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-sm btn-success fw-bold px-3">✓ Lưu Sản Phẩm Mới</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Tên Sản Phẩm</th>
+                    <th>Giá Bán</th>
+                    <th>Kho Vật Lý</th>
+                    <th>Đang Giữ (Committed)</th>
+                    <th>Khả Dụng (ATP)</th>
+                    <th>Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pid, p in products.items() %}
+                {% set atp = p.get('stock_physical', 0) - p.get('stock_committed', 0) %}
+                <tr>
+                    <td class="fw-bold font-monospace">{{ pid }}</td>
+                    <td>
+                        <form id="form-upd-{{ pid }}" action="/admin/update-product" method="POST">
+                            <input type="hidden" name="product_id" value="{{ pid }}">
+                        </form>
+                        <input type="text" form="form-upd-{{ pid }}" name="name" value="{{ p['name'] }}" class="form-control form-control-sm" style="min-width: 200px;" required>
+                    </td>
+                    <td>
+                        <input type="number" form="form-upd-{{ pid }}" name="price" value="{{ p['price'] }}" class="form-control form-control-sm" style="width: 105px;" min="1000" required>
+                    </td>
+                    <td>
+                        <input type="number" form="form-upd-{{ pid }}" name="stock_physical" value="{{ p.get('stock_physical', 0) }}" class="form-control form-control-sm" style="width: 80px;" min="0" required>
+                    </td>
+                    <td><span class="badge bg-secondary">{{ p.get('stock_committed', 0) }}</span></td>
+                    <td>
+                        <span class="badge {% if atp > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ atp }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <button type="submit" form="form-upd-{{ pid }}" class="btn btn-sm btn-primary">Lưu</button>
+                            <form action="/admin/delete-product" method="POST" onsubmit="return confirm('Xóa sản phẩm {{ pid }}?');">
+                                <input type="hidden" name="product_id" value="{{ pid }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -2144,10 +2281,10 @@ def product_detail(pid):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    next_url = request.args.get('next') or request.form.get('next') or '/'
+    next_url = _safe_next_url(request.args.get('next') or request.form.get('next'))
     if request.method == 'POST':
         login_input = (request.form.get('email') or request.form.get('login_id') or '').strip()
-        password = request.form.get('password')
+        password = request.form.get('password') or ''
         
         # Tìm tài khoản qua Email HOẶC Số điện thoại
         clean_input = login_input.lower()
@@ -2176,33 +2313,40 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    next_url = request.args.get('next') or request.form.get('next') or '/'
+    next_url = _safe_next_url(request.args.get('next') or request.form.get('next'))
     if request.method == 'POST':
         email = (request.form.get('email') or '').strip().lower()
         phone = (request.form.get('phone') or '').strip()
+        fullname = (request.form.get('fullname') or '').strip()
+        password = request.form.get('password') or ''
         clean_phone = re.sub(r'[^0-9]', '', phone)
+
+        if not fullname or not email or not clean_phone or len(password) < 6:
+            flash("Vui lòng nhập đầy đủ Họ tên, Email, SĐT và mật khẩu tối thiểu 6 ký tự!", "warning")
+            return redirect(url_for('register', next=next_url))
         
         if email in DB['users']:
             flash("Email này đã được sử dụng!", "warning")
-            return redirect(f'/register?next={next_url}')
+            return redirect(url_for('register', next=next_url))
 
         # Kiểm tra số điện thoại đã tồn tại chưa
         for u in DB['users'].values():
             u_phone = re.sub(r'[^0-9]', '', str(u.get('phone') or ''))
             if clean_phone and len(clean_phone) >= 9 and clean_phone == u_phone:
                 flash(f"Số điện thoại {phone} đã được đăng ký tài khoản trước đó!", "warning")
-                return redirect(f'/register?next={next_url}')
+                return redirect(url_for('register', next=next_url))
 
         new_user = {
             'email': email,
-            'password': generate_password_hash(request.form.get('password')),
-            'fullname': request.form.get('fullname'),
+            'password': generate_password_hash(password),
+            'fullname': fullname,
             'phone': phone,
-            'address': request.form.get('address'),
+            'address': (request.form.get('address') or '').strip(),
             'role': 'customer'
         }
-        DB['users'][email] = new_user
-        save_data(DB)
+        with DB_LOCK:
+            DB['users'][email] = new_user
+            save_data(DB)
         session['user'] = new_user
         flash(f"Chúc mừng {new_user['fullname']} đã đăng ký thành công!", "success")
         return redirect(next_url)
@@ -2224,30 +2368,49 @@ def profile():
 @app.route('/add-to-cart', methods=['POST'])
 def add_to_cart():
     pid = request.form.get('product_id')
-    qty = int(request.form.get('qty', 1))
-    next_url = request.form.get('next_url')
+    try:
+        qty = int(request.form.get('qty', 1))
+    except (TypeError, ValueError):
+        qty = 1
+    if qty < 1:
+        qty = 1
+    next_url = _safe_next_url(request.form.get('next_url')) if request.form.get('next_url') else None
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.form.get('ajax') == '1'
     product = DB['products'].get(pid)
-    if product:
-        cart = session.get('cart', [])
-        found = False
-        for item in cart:
-            if item['id'] == pid:
-                item['qty'] += qty
-                found = True
-                break
-        if not found:
-            cart.append({'id': product['id'], 'name': product['name'], 'price': product['price'], 'qty': qty, 'img': product.get('after_img', '')})
-        session['cart'] = cart
-        flash(f"Đã thêm '{product['name']}' vào giỏ hàng!", "success")
+    if not product:
         if is_ajax:
-            return jsonify({
-                'status': 'success',
-                'message': f"Đã thêm '{product['name']}' vào giỏ hàng!",
-                'cart_count': sum(i['qty'] for i in cart),
-                'cart_subtotal': sum(i['price'] * i['qty'] for i in cart),
-                'product_name': product['name']
-            })
+            return jsonify({'status': 'error', 'message': 'Sản phẩm không tồn tại!'}), 404
+        flash("Sản phẩm không tồn tại!", "danger")
+        return redirect('/')
+
+    available = _get_available_stock(product)
+    cart = session.get('cart', [])
+    existing_qty = sum(item['qty'] for item in cart if item['id'] == pid)
+    if existing_qty + qty > available:
+        msg = f"Sản phẩm '{product['name']}' chỉ còn {available} sản phẩm khả dụng!"
+        if is_ajax:
+            return jsonify({'status': 'error', 'message': msg}), 400
+        flash(msg, "warning")
+        return redirect(next_url or f'/product/{pid}')
+
+    found = False
+    for item in cart:
+        if item['id'] == pid:
+            item['qty'] += qty
+            found = True
+            break
+    if not found:
+        cart.append({'id': product['id'], 'name': product['name'], 'price': product['price'], 'qty': qty, 'img': product.get('after_img', '')})
+    session['cart'] = cart
+    flash(f"Đã thêm '{product['name']}' vào giỏ hàng!", "success")
+    if is_ajax:
+        return jsonify({
+            'status': 'success',
+            'message': f"Đã thêm '{product['name']}' vào giỏ hàng!",
+            'cart_count': sum(i['qty'] for i in cart),
+            'cart_subtotal': sum(i['price'] * i['qty'] for i in cart),
+            'product_name': product['name']
+        })
     if next_url:
         return redirect(next_url)
     return redirect('/cart')
@@ -2265,13 +2428,26 @@ def view_cart():
 @app.route('/update-cart', methods=['POST'])
 def update_cart():
     pid = request.form.get('product_id')
-    qty = int(request.form.get('qty', 1))
+    try:
+        qty = int(request.form.get('qty', 1))
+    except (TypeError, ValueError):
+        qty = 1
     cart = session.get('cart', [])
-    for item in cart:
-        if item['id'] == pid:
-            if qty > 0:
-                item['qty'] = qty
-            break
+    if qty <= 0:
+        cart = [i for i in cart if i['id'] != pid]
+    else:
+        product = DB['products'].get(pid)
+        available = _get_available_stock(product) if product else 0
+        if product and qty > available:
+            qty = max(1, available)
+            flash(f"Sản phẩm '{product['name']}' chỉ còn {available} sản phẩm trong kho!", "warning")
+        for item in cart:
+            if item['id'] == pid:
+                if available <= 0:
+                    cart = [i for i in cart if i['id'] != pid]
+                else:
+                    item['qty'] = qty
+                break
     session['cart'] = cart
     return redirect('/cart')
 
@@ -2336,73 +2512,89 @@ def process_order():
         return redirect('/')
     
     order_id = ''.join(random.choices(string.digits, k=6))
-    subtotal = sum(item['price'] * item['qty'] for item in cart)
-    payment_method = request.form.get('payment_method', 'VIETQR')
-    shipping_carrier = request.form.get('shipping_carrier', 'Giao Hàng Nhanh (GHN Express)')
-    shipping_fee = 15000 if ('Hỏa Tốc' in shipping_carrier or 'AhaMove' in shipping_carrier) else 0
-    final_total = subtotal + shipping_fee
-    
-    # THU THẬP THÔNG TIN ĐỊA CHỈ KHU VỰC VÀ TỌA ĐỘ GPS
-    province = request.form.get('province', '').strip()
-    district = request.form.get('district', '').strip()
-    ward = request.form.get('ward', '').strip()
-    street_address = request.form.get('street_address', '').strip()
-    geo_lat = request.form.get('geo_lat', '').strip()
-    geo_lng = request.form.get('geo_lng', '').strip()
-    
-    full_address = f"{street_address}, {ward}, {district}, {province}".strip(', ')
+    fullname = (request.form.get('fullname') or '').strip()
+    phone = (request.form.get('phone') or '').strip()
+    if not fullname or not phone:
+        flash("Vui lòng nhập đầy đủ họ tên và số điện thoại nhận hàng!", "warning")
+        return redirect('/checkout')
 
-    # CẬP NHẬT VÀ LƯU VỊ TRÍ VÀO TÀI KHOẢN NGƯỜI DÙNG TRONG DATABASE
-    user_email = user.get('email')
-    if user_email and user_email in DB['users']:
-        if full_address:
-            DB['users'][user_email]['address'] = full_address
-        if geo_lat and geo_lng:
-            DB['users'][user_email]['gps_lat'] = geo_lat
-            DB['users'][user_email]['gps_lng'] = geo_lng
-        if request.form.get('phone'):
-            DB['users'][user_email]['phone'] = request.form.get('phone')
-        session['user'] = DB['users'][user_email]
-    
-    now_dt = datetime.now()
-    now_ts = now_dt.timestamp()
-    expires_at_ts = now_ts + (24 * 3600)  # Tự động hủy sau 24h
-    
-    order = {
-        'id': order_id,
-        'fullname': request.form.get('fullname'),
-        'phone': request.form.get('phone'),
-        'email': user_email,
-        'province': province,
-        'district': district,
-        'ward': ward,
-        'street_address': street_address,
-        'address': full_address,
-        'geo_lat': geo_lat,
-        'geo_lng': geo_lng,
-        'warehouse_location': 'Kho Trung Tâm Quận 9 (TP. Thủ Đức, TP.HCM)',
-        'payment_method': payment_method,
-        'shipping_carrier': shipping_carrier,
-        'shipping_fee': shipping_fee,
-        'subtotal': subtotal,
-        'payment_status': 'Chờ thanh toán' if payment_method == 'VIETQR' else 'COD (Chưa thu)',
-        'total': final_total,
-        'items': cart,
-        'status': 'Chờ thanh toán VietQR' if payment_method == 'VIETQR' else 'Chờ xác nhận (COD)',
-        'created_at': now_dt.strftime("%H:%M %d/%m/%Y"),
-        'created_timestamp': now_ts,
-        'expires_at_timestamp': expires_at_ts,
-        'paid_at': ''
-    }
-    
-    # Khóa giữ tồn kho ATP
-    for item in cart:
-        pid = item['id']
-        if pid in DB['products']:
-            DB['products'][pid]['stock_committed'] += item['qty']
+    with DB_LOCK:
+        # Kiểm tra tồn kho khả dụng (ATP) cho toàn bộ giỏ hàng trước khi chốt đơn
+        for item in cart:
+            pid = item.get('id')
+            product = DB['products'].get(pid)
+            if not product or _get_available_stock(product) < int(item.get('qty', 0)):
+                avail = _get_available_stock(product) if product else 0
+                flash(f"Sản phẩm '{item.get('name')}' không đủ tồn kho (còn {avail}). Vui lòng cập nhật giỏ hàng!", "danger")
+                return redirect('/cart')
 
-    DB['orders'][order_id] = order
-    save_data(DB)
+        subtotal = sum(item['price'] * item['qty'] for item in cart)
+        payment_method = request.form.get('payment_method', 'VIETQR')
+        shipping_carrier = request.form.get('shipping_carrier', 'Giao Hàng Nhanh (GHN Express)')
+        shipping_fee = 15000 if ('Hỏa Tốc' in shipping_carrier or 'AhaMove' in shipping_carrier) else 0
+        final_total = subtotal + shipping_fee
+        
+        # THU THẬP THÔNG TIN ĐỊA CHỈ KHU VỰC VÀ TỌA ĐỘ GPS
+        province = request.form.get('province', '').strip()
+        district = request.form.get('district', '').strip()
+        ward = request.form.get('ward', '').strip()
+        street_address = request.form.get('street_address', '').strip()
+        geo_lat = request.form.get('geo_lat', '').strip()
+        geo_lng = request.form.get('geo_lng', '').strip()
+        
+        full_address = f"{street_address}, {ward}, {district}, {province}".strip(', ')
+
+        # CẬP NHẬT VÀ LƯU VỊ TRÍ VÀO TÀI KHOẢN NGƯỜI DÙNG TRONG DATABASE
+        user_email = user.get('email')
+        if user_email and user_email in DB['users']:
+            if full_address:
+                DB['users'][user_email]['address'] = full_address
+            if geo_lat and geo_lng:
+                DB['users'][user_email]['gps_lat'] = geo_lat
+                DB['users'][user_email]['gps_lng'] = geo_lng
+            if phone:
+                DB['users'][user_email]['phone'] = phone
+            session['user'] = DB['users'][user_email]
+        
+        now_dt = datetime.now()
+        now_ts = now_dt.timestamp()
+        expires_at_ts = now_ts + (24 * 3600)  # Tự động hủy sau 24h
+        
+        order = {
+            'id': order_id,
+            'fullname': fullname,
+            'phone': phone,
+            'email': user_email,
+            'province': province,
+            'district': district,
+            'ward': ward,
+            'street_address': street_address,
+            'address': full_address,
+            'geo_lat': geo_lat,
+            'geo_lng': geo_lng,
+            'warehouse_location': 'Kho Trung Tâm Quận 9 (TP. Thủ Đức, TP.HCM)',
+            'payment_method': payment_method,
+            'shipping_carrier': shipping_carrier,
+            'shipping_fee': shipping_fee,
+            'subtotal': subtotal,
+            'payment_status': 'Chờ thanh toán' if payment_method == 'VIETQR' else 'COD (Chưa thu)',
+            'total': final_total,
+            'items': cart,
+            'status': 'Chờ thanh toán VietQR' if payment_method == 'VIETQR' else 'Chờ xác nhận (COD)',
+            'created_at': now_dt.strftime("%H:%M %d/%m/%Y"),
+            'created_timestamp': now_ts,
+            'expires_at_timestamp': expires_at_ts,
+            'paid_at': ''
+        }
+        
+        # Khóa giữ tồn kho ATP
+        for item in cart:
+            pid = item['id']
+            if pid in DB['products']:
+                DB['products'][pid]['stock_committed'] += item['qty']
+
+        DB['orders'][order_id] = order
+        save_data(DB)
     session['cart'] = []
     
     if payment_method == 'VIETQR':
@@ -2426,19 +2618,24 @@ def payment_gateway(order_id):
 
 @app.route('/confirm-payment/<order_id>', methods=['POST', 'GET'])
 def confirm_payment(order_id):
+    user = session.get('user')
     order = DB['orders'].get(order_id)
     if not order:
         return redirect('/')
+    if not user or (user.get('role') != 'admin' and user.get('email') != order.get('email')):
+        flash("Vui lòng đăng nhập đúng tài khoản đặt hàng để xác nhận!", "warning")
+        return redirect(url_for('login', next=f'/payment/{order_id}'))
         
-    if order.get('status') == 'Đã tự hủy (Quá hạn 24h)' or time.time() >= order.get('expires_at_timestamp', 0):
-        flash("Đơn hàng đã quá hạn 24h và đã tự hủy!", "danger")
+    if order.get('status') in ['Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy'] or time.time() >= order.get('expires_at_timestamp', 0):
+        flash("Đơn hàng đã hết hạn hoặc đã hủy!", "danger")
         return redirect(f'/payment/{order_id}')
         
-    # CHUYỂN NGAY SANG: ĐƠN HÀNG ĐANG ĐƯỢC CHUẨN BỊ
-    order['status'] = 'Đơn hàng đang được chuẩn bị'
-    order['payment_status'] = 'Đã thanh toán'
-    order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
-    save_data(DB)
+    with DB_LOCK:
+        # CHUYỂN NGAY SANG: ĐƠN HÀNG ĐANG ĐƯỢC CHUẨN BỊ
+        order['status'] = 'Đơn hàng đang được chuẩn bị'
+        order['payment_status'] = 'Đã thanh toán'
+        order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
+        save_data(DB)
     
     flash("Thanh toán thành công! Đơn hàng đang được chuẩn bị tại kho.", "success")
     return redirect(f'/payment-success/{order_id}')
@@ -2472,14 +2669,22 @@ def api_check_payment(order_id):
 @app.route('/api/simulate-bank-transfer/<order_id>', methods=['POST', 'GET'])
 def api_simulate_bank_transfer(order_id):
     """Mô phỏng tài khoản MBBank của Admin nhận biến động số dư đúng mã đơn"""
+    user = session.get('user')
+    is_demo_enabled = os.environ.get('ENABLE_DEMO_PAYMENT', '1') == '1'
+    if not is_demo_enabled and (not user or user.get('role') != 'admin'):
+        return jsonify({'status': 'error', 'message': 'Chế độ giả lập đã tắt trên môi trường Production'}), 403
+
     order = DB['orders'].get(order_id)
     if not order:
         return jsonify({'status': 'error', 'message': 'Không tìm thấy đơn hàng'}), 404
+    if order.get('status') in ['Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy'] or time.time() >= order.get('expires_at_timestamp', 0):
+        return jsonify({'status': 'error', 'message': 'Đơn hàng đã hết hạn hoặc đã hủy'}), 400
     
-    order['status'] = 'Đơn hàng đang được chuẩn bị'
-    order['payment_status'] = 'Đã thanh toán'
-    order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
-    save_data(DB)
+    with DB_LOCK:
+        order['status'] = 'Đơn hàng đang được chuẩn bị'
+        order['payment_status'] = 'Đã thanh toán'
+        order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
+        save_data(DB)
     return jsonify({
         'status': 'success',
         'message': f"Đã nhận biến động số dư ngân hàng cho đơn #{order_id} (+{order['total']:,}đ)!",
@@ -2494,31 +2699,77 @@ def webhook_bank_transfer():
     Khi tiền vào tài khoản ngân hàng thật của Admin, SePay/Casso sẽ gọi URL này.
     Ví dụ nội dung: 'NEPNHO 123456'
     """
+    expected_secret = os.environ.get('WEBHOOK_SECRET')
+    if expected_secret:
+        auth_header = request.headers.get('Authorization', '')
+        api_key_header = request.headers.get('X-Webhook-Secret', '')
+        if api_key_header != expected_secret and auth_header != f"Apikey {expected_secret}" and auth_header != f"Bearer {expected_secret}":
+            return jsonify({'status': 'error', 'message': 'Unauthorized webhook'}), 401
+
     data = request.get_json(silent=True) or request.form.to_dict()
     if not data:
         return jsonify({'status': 'error', 'message': 'Không có dữ liệu'}), 400
 
     content = str(data.get('content') or data.get('description') or data.get('code') or '')
-    amount = float(data.get('transferAmount') or data.get('amount') or 0)
+    try:
+        amount = float(data.get('transferAmount') or data.get('amount') or 0)
+    except (TypeError, ValueError):
+        amount = 0
     
     # Tìm mã đơn 6 chữ số trong nội dung chuyển khoản
     match = re.search(r'NEPNHO\s*([0-9]{6})', content, re.IGNORECASE) or re.search(r'\b([0-9]{6})\b', content)
     if match:
         order_id = match.group(1)
-        order = DB['orders'].get(order_id)
-        if order and order.get('payment_status') != 'Đã thanh toán':
-            order['status'] = 'Đơn hàng đang được chuẩn bị'
-            order['payment_status'] = 'Đã thanh toán'
-            order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
-            order['bank_ref'] = data.get('referenceCode', '')
-            save_data(DB)
-            return jsonify({
-                'status': 'success',
-                'message': f"Đã tự động khớp đơn hàng #{order_id} thành công!",
-                'order_id': order_id
-            })
+        with DB_LOCK:
+            order = DB['orders'].get(order_id)
+            if not order:
+                return jsonify({'status': 'ignored', 'message': 'Không tìm thấy đơn hàng'}), 200
+            if order.get('status') in ['Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy'] or time.time() >= order.get('expires_at_timestamp', 0):
+                return jsonify({'status': 'ignored', 'message': 'Đơn hàng đã hết hạn hoặc đã hủy'}), 200
+            if amount < float(order.get('total', 0)):
+                return jsonify({'status': 'ignored', 'message': f"Số tiền chuyển ({amount:,.0f}đ) nhỏ hơn tổng đơn ({order.get('total', 0):,}đ)"}), 200
+            if order.get('payment_status') != 'Đã thanh toán':
+                order['status'] = 'Đơn hàng đang được chuẩn bị'
+                order['payment_status'] = 'Đã thanh toán'
+                order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
+                order['bank_ref'] = data.get('referenceCode', '')
+                save_data(DB)
+                return jsonify({
+                    'status': 'success',
+                    'message': f"Đã tự động khớp đơn hàng #{order_id} thành công!",
+                    'order_id': order_id
+                })
 
     return jsonify({'status': 'ignored', 'message': 'Không tìm thấy mã đơn hợp lệ'}), 200
+
+@app.route('/cancel-order/<order_id>', methods=['POST'])
+def cancel_order(order_id):
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('login', next=f'/order-status/{order_id}'))
+    with DB_LOCK:
+        order = DB['orders'].get(order_id)
+        if not order:
+            flash("Không tìm thấy đơn hàng!", "danger")
+            return redirect('/profile')
+        if user.get('role') != 'admin' and order.get('email') != user.get('email'):
+            flash("Bạn không có quyền hủy đơn hàng này!", "danger")
+            return redirect('/profile')
+        if order.get('status') not in ['Chờ thanh toán VietQR', 'Chờ xác nhận (COD)']:
+            flash("Chỉ có thể hủy đơn hàng khi chưa đóng gói/vận chuyển!", "warning")
+            return redirect(f'/order-status/{order_id}')
+
+        order['status'] = 'Khách hàng đã hủy'
+        order['payment_status'] = 'Đã hủy'
+        for item in order.get('items', []):
+            pid = item.get('id')
+            if pid in DB['products']:
+                DB['products'][pid]['stock_committed'] = max(
+                    0, DB['products'][pid]['stock_committed'] - int(item.get('qty', 0))
+                )
+        save_data(DB)
+    flash(f"Đã hủy đơn hàng #{order_id} và hoàn lại tồn kho.", "info")
+    return redirect('/profile')
 
 @app.route('/order-status/<order_id>')
 def order_status(order_id):
@@ -2542,20 +2793,111 @@ def admin_update_order():
         return redirect('/')
     oid = request.form.get('order_id')
     status = request.form.get('status')
-    if oid in DB['orders']:
-        old_status = DB['orders'][oid]['status']
-        DB['orders'][oid]['status'] = status
-        if status in ['Đơn hàng đang được chuẩn bị', 'Đã bàn giao 3PL (GHTK/GHN)', 'Giao thành công (POD)']:
-            DB['orders'][oid]['payment_status'] = 'Đã thanh toán'
-            if not DB['orders'][oid].get('paid_at'):
-                DB['orders'][oid]['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
-        if status == 'Đã tự hủy (Quá hạn 24h)' and old_status != 'Đã tự hủy (Quá hạn 24h)':
-            for item in DB['orders'][oid].get('items', []):
-                pid = item.get('id')
-                if pid in DB['products']:
-                    DB['products'][pid]['stock_committed'] = max(0, DB['products'][pid]['stock_committed'] - item.get('qty', 0))
+    cancelled_states = ('Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy')
+    with DB_LOCK:
+        if oid in DB['orders']:
+            old_status = DB['orders'][oid]['status']
+            DB['orders'][oid]['status'] = status
+            if status in ['Đơn hàng đang được chuẩn bị', 'Đã bàn giao 3PL (GHTK/GHN)', 'Giao thành công (POD)']:
+                DB['orders'][oid]['payment_status'] = 'Đã thanh toán'
+                if not DB['orders'][oid].get('paid_at'):
+                    DB['orders'][oid]['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
+
+            # Khi giao thành công (POD) lần đầu: trừ tồn kho vật lý và giải phóng committed
+            if status == 'Giao thành công (POD)' and old_status != 'Giao thành công (POD)' and old_status not in cancelled_states:
+                for item in DB['orders'][oid].get('items', []):
+                    pid = item.get('id')
+                    qty = int(item.get('qty', 0))
+                    if pid in DB['products']:
+                        DB['products'][pid]['stock_physical'] = max(0, DB['products'][pid]['stock_physical'] - qty)
+                        DB['products'][pid]['stock_committed'] = max(0, DB['products'][pid]['stock_committed'] - qty)
+
+            # Khi hủy đơn (từ trạng thái chưa hủy & chưa POD): giải phóng tồn kho committed
+            if status in cancelled_states and old_status not in cancelled_states and old_status != 'Giao thành công (POD)':
+                for item in DB['orders'][oid].get('items', []):
+                    pid = item.get('id')
+                    qty = int(item.get('qty', 0))
+                    if pid in DB['products']:
+                        DB['products'][pid]['stock_committed'] = max(0, DB['products'][pid]['stock_committed'] - qty)
+            save_data(DB)
+            flash(f"Đã cập nhật đơn #{oid} thành '{status}'!", "success")
+    return redirect('/admin')
+
+@app.route('/admin/add-product', methods=['POST'])
+def admin_add_product():
+    user = session.get('user')
+    if not user or user.get('role') != 'admin':
+        return redirect('/')
+    pid = (request.form.get('id') or '').strip().upper()
+    name = (request.form.get('name') or '').strip()
+    if not pid or not name:
+        flash("Vui lòng nhập Mã SKU và Tên sản phẩm!", "warning")
+        return redirect('/admin')
+    with DB_LOCK:
+        if pid in DB['products']:
+            flash(f"Mã SKU '{pid}' đã tồn tại!", "warning")
+            return redirect('/admin')
+        try:
+            price = max(1000, int(request.form.get('price', 0)))
+            original_price = max(0, int(request.form.get('original_price', 0)))
+            stock_physical = max(0, int(request.form.get('stock_physical', 0)))
+        except (TypeError, ValueError):
+            flash("Giá hoặc tồn kho không hợp lệ!", "danger")
+            return redirect('/admin')
+
+        DB['products'][pid] = {
+            'id': pid,
+            'name': name,
+            'price': price,
+            'original_price': original_price or price,
+            'category': (request.form.get('category') or 'Làm đẹp & Bàn trang điểm').strip(),
+            'description': (request.form.get('description') or '').strip(),
+            'kit_components': [],
+            'before_img': (request.form.get('before_img') or '/images/nep_ban_before.png').strip(),
+            'after_img': (request.form.get('after_img') or '/images/nep_ban.png').strip(),
+            'stock_physical': stock_physical,
+            'stock_committed': 0
+        }
         save_data(DB)
-        flash(f"Đã cập nhật đơn #{oid} thành '{status}'!", "success")
+    flash(f"Đã thêm sản phẩm mới '{name}' ({pid})!", "success")
+    return redirect('/admin')
+
+@app.route('/admin/update-product', methods=['POST'])
+def admin_update_product():
+    user = session.get('user')
+    if not user or user.get('role') != 'admin':
+        return redirect('/')
+    pid = (request.form.get('product_id') or '').strip()
+    with DB_LOCK:
+        if pid not in DB['products']:
+            flash("Không tìm thấy sản phẩm!", "danger")
+            return redirect('/admin')
+        try:
+            name = (request.form.get('name') or '').strip()
+            price = max(1000, int(request.form.get('price', 0)))
+            stock_physical = max(0, int(request.form.get('stock_physical', 0)))
+        except (TypeError, ValueError):
+            flash("Dữ liệu cập nhật sản phẩm không hợp lệ!", "danger")
+            return redirect('/admin')
+        if name:
+            DB['products'][pid]['name'] = name
+        DB['products'][pid]['price'] = price
+        DB['products'][pid]['stock_physical'] = stock_physical
+        save_data(DB)
+    flash(f"Đã cập nhật sản phẩm {pid}!", "success")
+    return redirect('/admin')
+
+@app.route('/admin/delete-product', methods=['POST'])
+def admin_delete_product():
+    user = session.get('user')
+    if not user or user.get('role') != 'admin':
+        return redirect('/')
+    pid = (request.form.get('product_id') or '').strip()
+    with DB_LOCK:
+        if pid in DB['products']:
+            del DB['products'][pid]
+            save_data(DB)
+            flash(f"Đã xóa sản phẩm {pid}!", "info")
     return redirect('/admin')
 
 @app.route('/images/<path:filename>')
