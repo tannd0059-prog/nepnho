@@ -4,18 +4,50 @@ import random
 import string
 import time
 import re
+import secrets
 import threading
+from collections import defaultdict
 from datetime import datetime
-from flask import Flask, render_template_string, request, redirect, url_for, session, jsonify, flash, send_from_directory
+from flask import Flask, render_template_string, request, redirect, url_for, session, jsonify, flash, send_from_directory, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from templates_responsive import DESKTOP_TEMPLATE, TABLET_TEMPLATE, MOBILE_TEMPLATE, DEMO_SHOWCASE_TEMPLATE
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "nepnho_d2c_full_system_key_2026")
+
+def _load_or_create_secret_key():
+    env_key = os.environ.get("SECRET_KEY")
+    if env_key:
+        return env_key
+    key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".secret_key")
+    if os.path.exists(key_file):
+        try:
+            with open(key_file, "r", encoding="utf-8") as f:
+                val = f.read().strip()
+                if len(val) >= 32:
+                    return val
+        except Exception:
+            pass
+    new_key = secrets.token_hex(32)
+    try:
+        with open(key_file, "w", encoding="utf-8") as f:
+            f.write(new_key)
+    except Exception:
+        pass
+    return new_key
+
+app.secret_key = _load_or_create_secret_key()
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=(os.environ.get("FLASK_ENV") == "production" or bool(os.environ.get("RENDER"))),
+)
 
 DATA_FILE = "nepnho_db.json"
 DB_LOCK = threading.RLock()
+LOGIN_ATTEMPTS = defaultdict(list)
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_LOCK_SECONDS = 300
 
 # ==============================================================================
 # CẤU HÌNH TÀI KHOẢN NGÂN HÀNG THANH TOÁN (VIETQR TỰ ĐỘNG)
@@ -138,12 +170,12 @@ DEFAULT_PRODUCTS = {
     },
     "NN-CABLE-BOX": {
         "id": "NN-CABLE-BOX",
-        "name": "Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy",
+        "name": "Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chịu Nhiệt",
         "price": 115000,
         "original_price": 155000,
         "category": "Góc phòng gọn gàng",
-        "description": "Gom gọn toàn bộ ổ cắm 6-8 lỗ và mớ dây sạc rườm rà dưới sàn. Nắp gỗ tự nhiên có rãnh làm giá đỡ điện thoại/ipad khi sạc an toàn.",
-        "kit_components": ["Hộp nhựa ABS chống cháy cách điện", "Nắp gỗ tre tự nhiên có rãnh đỡ", "Khe tản nhiệt thông minh", "Khe luồn dây hai đầu"],
+        "description": "Gom gọn toàn bộ ổ cắm 6-8 lỗ và mớ dây sạc rườm rà dưới sàn. Nắp gỗ tự nhiên có rãnh làm giá đỡ điện thoại/ipad khi sạc gọn gàng.",
+        "kit_components": ["Hộp nhựa ABS chịu nhiệt, hạn chế bắt lửa", "Nắp gỗ tre tự nhiên có rãnh đỡ", "Khe tản nhiệt thông minh", "Khe luồn dây hai đầu"],
         "before_img": "/images/hop_dung_day_before.png",
         "after_img": "/images/hop_dung_day.png",
         "stock_physical": 60,
@@ -181,8 +213,8 @@ DEFAULT_PRODUCTS = {
         "price": 85000,
         "original_price": 120000,
         "category": "Đời sống & Thư giãn",
-        "description": "Thảm lông mềm mịn êm chân đường kính 80cm phong cách Bắc Âu. Đế chống trượt tuyệt đối, tạo điểm nhấn ấm cúng cho góc làm đẹp phòng trọ.",
-        "kit_components": ["Lớp lông sợi microfiber mềm mịn", "Đế silicone hạt nổi chống trượt 100%", "Dễ dàng giặt máy hoặc vệ sinh"],
+        "description": "Thảm lông mềm mịn êm chân đường kính 80cm phong cách Bắc Âu. Đế hạt nổi tăng độ bám chống trượt, tạo điểm nhấn ấm cúng cho góc làm đẹp phòng trọ.",
+        "kit_components": ["Lớp lông sợi microfiber mềm mịn", "Đế silicone hạt nổi tăng độ bám chống trượt", "Dễ dàng giặt máy hoặc vệ sinh"],
         "before_img": "/images/tham_long_before.png",
         "after_img": "/images/tham_long.png",
         "stock_physical": 40,
@@ -242,42 +274,47 @@ DEFAULT_PRODUCTS = {
     }
 }
 
-DEFAULT_USERS = {
-    "admin@nepnho.vn": {
-        "email": "admin@nepnho.vn",
-        "password": generate_password_hash("admin123"),
-        "fullname": "Quản Trị Viên Nếp Nhỏ",
-        "phone": "0900000000",
-        "address": "Kho Trung Tâm Nếp Nhỏ: Phường Phước Long B, Quận 9, TP. Thủ Đức, TP.HCM",
-        "role": "admin"
-    },
-    "tan@gmail.com": {
-        "email": "tan@gmail.com",
-        "password": generate_password_hash("123"),
-        "fullname": "Nguyễn Văn Tân",
-        "phone": "0901234567",
-        "address": "123 Nguyễn Văn Cừ, Phường 2, Quận 5, TP. Hồ Chí Minh",
-        "role": "customer"
+def _build_default_users():
+    admin_pwd = os.environ.get("ADMIN_INITIAL_PASSWORD") or secrets.token_urlsafe(12)
+    if not os.environ.get("ADMIN_INITIAL_PASSWORD"):
+        print(f"[SECURITY] Created initial admin account admin@nepnho.vn with random password (change via /profile or ADMIN_INITIAL_PASSWORD).", flush=True)
+    return {
+        "admin@nepnho.vn": {
+            "email": "admin@nepnho.vn",
+            "password": generate_password_hash(admin_pwd),
+            "fullname": "Quản Trị Viên Nếp Nhỏ",
+            "phone": "0900000000",
+            "address": "Kho Trung Tâm Nếp Nhỏ: Phường Phước Long B, Quận 9, TP. Thủ Đức, TP.HCM",
+            "role": "admin",
+            "session_version": 2
+        }
     }
-}
+
+DEFAULT_USERS = _build_default_users()
 
 def load_data():
-    db = {"users": DEFAULT_USERS, "products": DEFAULT_PRODUCTS, "orders": {}, "bank_config": DEFAULT_BANK_CONFIG}
     if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, 'r', encoding='utf-8') as f:
-                loaded = json.load(f)
-                db['users'] = loaded.get('users', DEFAULT_USERS)
-                existing_products = loaded.get('products', {})
-                for pid, pdata in DEFAULT_PRODUCTS.items():
-                    if pid not in existing_products:
-                        existing_products[pid] = pdata
-                db['products'] = existing_products
-                db['orders'] = loaded.get('orders', {})
-                db['bank_config'] = loaded.get('bank_config', DEFAULT_BANK_CONFIG)
-                return db
-        except Exception:
-            pass
+        with open(DATA_FILE, 'r', encoding='utf-8') as f:
+            loaded = json.load(f)
+        db = {
+            "users": loaded.get('users', DEFAULT_USERS),
+            "products": loaded.get('products', {}),
+            "orders": loaded.get('orders', {}),
+            "bank_config": loaded.get('bank_config', DEFAULT_BANK_CONFIG),
+            "processed_tx_ids": loaded.get('processed_tx_ids', []),
+        }
+        for pid, pdata in DEFAULT_PRODUCTS.items():
+            if pid not in db['products']:
+                db['products'][pid] = pdata
+        return db
+
+    db = {
+        "users": DEFAULT_USERS,
+        "products": DEFAULT_PRODUCTS,
+        "orders": {},
+        "bank_config": DEFAULT_BANK_CONFIG,
+        "processed_tx_ids": [],
+    }
     save_data(db)
     return db
 
@@ -299,10 +336,37 @@ def _safe_next_url(next_url):
     return '/'
 
 
+def _get_current_user():
+    session.pop('user', None)  # Không bao giờ lưu object user/hash mật khẩu trong cookie
+    uid = session.get('user_id')
+    if not uid:
+        return None
+    u = DB['users'].get(uid)
+    if not u:
+        return None
+    if session.get('session_version', 1) != u.get('session_version', 1):
+        session.pop('user_id', None)
+        session.pop('session_version', None)
+        return None
+    return u
+
+
+def _sanitized_user(user):
+    if not user:
+        return None
+    return {k: v for k, v in user.items() if k != 'password'}
+
+
+def _calc_shipping_fee(subtotal, shipping_carrier):
+    if 'Hỏa Tốc' in (shipping_carrier or '') or 'AhaMove' in (shipping_carrier or ''):
+        return 15000
+    return 0 if subtotal >= 299000 else 25000
+
+
 DB = load_data()
 
 # ==============================================================================
-# HÀM TỰ ĐỘNG HỦY ĐƠN CHUYỂN KHOẢN SAU 24 GIỜ (HOÀN TRẢ TỒN KHO ATP)
+# HÀM TỰ ĐỘNG HỦY ĐƠN CHUYỂN KHOẢN SAU 24 GIỜ (HOÀN TRẢ TỒN KHO)
 # ==============================================================================
 def check_and_cancel_expired_orders():
     now_ts = time.time()
@@ -324,12 +388,14 @@ def check_and_cancel_expired_orders():
                 if now_ts >= expires_at:
                     o['status'] = 'Đã tự hủy (Quá hạn 24h)'
                     o['payment_status'] = 'Đã hết hạn thanh toán'
-                    for item in o.get('items', []):
-                        pid = item.get('id')
-                        if pid in DB['products']:
-                            DB['products'][pid]['stock_committed'] = max(
-                                0, DB['products'][pid]['stock_committed'] - item.get('qty', 0)
-                            )
+                    if o.get('stock_state', 'committed') == 'committed':
+                        for item in o.get('items', []):
+                            pid = item.get('id')
+                            if pid in DB['products']:
+                                DB['products'][pid]['stock_committed'] = max(
+                                    0, DB['products'][pid]['stock_committed'] - int(item.get('qty', 0))
+                                )
+                        o['stock_state'] = 'released'
                     has_changes = True
 
         if has_changes:
@@ -338,6 +404,14 @@ def check_and_cancel_expired_orders():
 @app.before_request
 def before_request_hook():
     check_and_cancel_expired_orders()
+    _get_current_user()
+
+    # Bảo vệ CSRF cho mọi request POST (trừ webhook từ hệ thống ngân hàng)
+    if request.method == 'POST' and request.path != '/webhook/bank-transfer':
+        expected = session.get('_csrf_token')
+        provided = request.form.get('_csrf_token') or request.headers.get('X-CSRF-Token')
+        if not expected or not provided or not secrets.compare_digest(str(expected), str(provided)):
+            abort(403, description="CSRF token không hợp lệ hoặc phiên đã hết hạn.")
 
 # ==============================================================================
 # MASTER HTML TEMPLATE
@@ -407,9 +481,9 @@ BASE_HTML = """
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto ms-lg-4">
                     <li class="nav-item"><a class="nav-link fw-bold text-dark" href="/">Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link text-muted" href="/#products-section">Cửa hàng</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold text-success" href="/demo" target="_blank">📱 Xem 3 Giao Diện</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted" href="/#storeSection">Cửa hàng</a></li>
                     {% if current_user and current_user.get('role') == 'admin' %}
+                    <li class="nav-item"><a class="nav-link fw-bold text-success" href="/demo" target="_blank">📱 Xem 3 Giao Diện</a></li>
                     <li class="nav-item"><a class="nav-link fw-bold text-danger" href="/admin">⚙️ QUẢN TRỊ ADMIN</a></li>
                     {% endif %}
                 </ul>
@@ -432,9 +506,11 @@ BASE_HTML = """
                             ⚙️ Quản Trị
                         </a>
                         {% endif %}
-                        <a href="/logout" class="btn btn-outline-danger fw-bold text-decoration-none">
-                            🚪 Đăng xuất
-                        </a>
+                        <form action="/logout" method="POST" class="d-inline m-0">
+                            <button type="submit" class="btn btn-outline-danger fw-bold">
+                                🚪 Đăng xuất
+                            </button>
+                        </form>
                     </div>
                     {% else %}
                     <a href="/login" class="btn btn-outline-secondary">Đăng nhập</a>
@@ -478,6 +554,20 @@ BASE_HTML = """
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const csrfVal = {{ csrf_token | tojson }};
+        document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function(form) {
+            if (!form.querySelector('input[name="_csrf_token"]')) {
+                const inp = document.createElement('input');
+                inp.type = 'hidden';
+                inp.name = '_csrf_token';
+                inp.value = csrfVal;
+                form.appendChild(inp);
+            }
+        });
+    });
+    </script>
     <script>
     function copyToClipboard(text, btnElement) {
         if (!navigator.clipboard) {
@@ -597,9 +687,13 @@ PRODUCT_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
     <div class="col-md-6 d-flex flex-column">
         <span class="badge bg-warning text-dark mb-2 align-self-start">{{ product['category'] }}</span>
         <h2 class="fw-bold mb-2 text-dark">{{ product['name'] }}</h2>
-        <div class="mb-3 d-flex align-items-center gap-2">
+        <div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
             <span class="fs-3 fw-bold text-danger">{{ "{:,}".format(product['price']) }}đ</span>
-            <span class="badge bg-success ms-auto">ATP Khả dụng: {{ product['stock_physical'] - product['stock_committed'] }}</span>
+            {% if product.get('original_price', 0) > product['price'] %}
+            <span class="text-muted text-decoration-line-through fs-6">{{ "{:,}".format(product['original_price']) }}đ</span>
+            <span class="badge bg-danger">-{{ (((product['original_price'] - product['price']) / product['original_price'] * 100) | round | int) }}%</span>
+            {% endif %}
+            <span class="badge bg-success ms-auto">Còn {{ product['stock_physical'] - product['stock_committed'] }} sản phẩm</span>
         </div>
         <p class="text-secondary fs-6 mb-3">{{ product['description'] }}</p>
         <div class="p-3 mb-3 bg-light rounded-3 border">
@@ -668,7 +762,11 @@ CART_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                             </form>
                         </td>
                         <td class="fw-bold text-danger">{{ "{:,}".format(item['price'] * item['qty']) }}đ</td>
-                        <td><a href="/remove-cart/{{ item['id'] }}" class="btn btn-sm btn-outline-danger">✕</a></td>
+                        <td>
+                            <form action="/remove-cart/{{ item['id'] }}" method="POST" class="m-0">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">✕</button>
+                            </form>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -682,10 +780,18 @@ CART_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
     <div class="col-md-4">
         <div class="card p-3 border-0 shadow-sm bg-white rounded-3">
             <h5 class="fw-bold mb-3">Tóm Tắt</h5>
+            {% set default_ship = 0 if subtotal >= 299000 else 25000 %}
             <div class="d-flex justify-content-between mb-2"><span>Tạm tính:</span><span>{{ "{:,}".format(subtotal) }}đ</span></div>
-            <div class="d-flex justify-content-between mb-2"><span>Phí ship:</span><span class="text-success fw-bold">0đ (Freeship từ Kho Q9)</span></div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Phí ship tiêu chuẩn:</span>
+                {% if default_ship == 0 %}
+                <span class="text-success fw-bold">0đ (Freeship đơn từ 299K)</span>
+                {% else %}
+                <span class="text-dark fw-bold">{{ "{:,}".format(default_ship) }}đ (Freeship từ 299K)</span>
+                {% endif %}
+            </div>
             <hr>
-            <div class="d-flex justify-content-between fs-5 fw-bold mb-3"><span>Tổng:</span><span class="text-danger">{{ "{:,}".format(subtotal) }}đ</span></div>
+            <div class="d-flex justify-content-between fs-5 fw-bold mb-3"><span>Tạm tính tổng:</span><span class="text-danger">{{ "{:,}".format(subtotal + default_ship) }}đ</span></div>
             <a href="/checkout" class="btn btn-sage btn-lg w-100 py-2 fs-6">Đi Đến Bước Đặt Hàng & Giao Đến</a>
         </div>
     </div>
@@ -796,17 +902,17 @@ CHECKOUT_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold small">Họ và tên người nhận *</label>
-                        <input type="text" name="fullname" class="form-control" required value="{{ user_info['fullname'] }}" placeholder="Nguyễn Văn A">
+                        <input type="text" name="fullname" class="form-control" required value="{{ (user_info or {}).get('fullname', '') }}" placeholder="Nguyễn Văn A">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold small">Số điện thoại *</label>
-                        <input type="tel" name="phone" class="form-control" required value="{{ user_info['phone'] }}" placeholder="0901234567">
+                        <input type="tel" name="phone" class="form-control" required value="{{ (user_info or {}).get('phone', '') }}" placeholder="09xxxxxxxx">
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold small">Email nhận thông báo *</label>
-                    <input type="email" name="email" class="form-control" required value="{{ user_info['email'] }}" placeholder="email@example.com">
+                    <input type="email" name="email" class="form-control" required value="{{ (user_info or {}).get('email', '') }}" placeholder="email@example.com">
                 </div>
 
                 <!-- SELECT PHÂN CẤP KHU VỰC HÀNH CHÍNH (TOÀN QUỐC 63 TỈNH THÀNH) -->
@@ -923,7 +1029,7 @@ CHECKOUT_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <strong class="text-dark" style="font-size: 0.88rem;">🚚 GHN Express</strong>
-                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">Freeship 0đ</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">{% if subtotal >= 299000 %}Freeship 0đ{% else %}25.000đ{% endif %}</span>
                                 </div>
                                 <div class="small text-muted mt-1" style="font-size: 0.74rem;">Đối tác chính. Giao 24h nội thành HCM, 2-3 ngày toàn quốc. Tích hợp định vị GPS.</div>
                             </div>
@@ -937,7 +1043,7 @@ CHECKOUT_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <strong class="text-dark" style="font-size: 0.88rem;">⚡ GHTK</strong>
-                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">Freeship 0đ</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">{% if subtotal >= 299000 %}Freeship 0đ{% else %}25.000đ{% endif %}</span>
                                 </div>
                                 <div class="small text-muted mt-1" style="font-size: 0.74rem;">Chuyên đơn D2C, gọi hẹn giờ trước khi giao, hỗ trợ đồng kiểm.</div>
                             </div>
@@ -951,7 +1057,7 @@ CHECKOUT_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <strong class="text-dark" style="font-size: 0.88rem;">🦅 Viettel Post</strong>
-                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">Freeship 0đ</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold">{% if subtotal >= 299000 %}Freeship 0đ{% else %}25.000đ{% endif %}</span>
                                 </div>
                                 <div class="small text-muted mt-1" style="font-size: 0.74rem;">Mạng lưới phủ 100% huyện xã toàn quốc, vùng sâu vùng xa an tâm.</div>
                             </div>
@@ -1013,6 +1119,13 @@ CHECKOUT_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
                     </label>
                 </div>
 
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="privacyConsent" name="privacy_consent" required>
+                    <label class="form-check-label small text-muted" for="privacyConsent">
+                        Tôi đồng ý cho Nếp Nhỏ sử dụng số điện thoại, địa chỉ và tọa độ GPS (nếu cung cấp) để xử lý và giao đơn hàng theo <a href="/chinh-sach/bao-mat" target="_blank" class="text-success fw-bold">Chính sách bảo mật</a>.
+                    </label>
+                </div>
+
                 <button type="submit" class="btn btn-sage btn-lg w-100 py-3 fs-6 shadow-sm fw-bold">
                     ✓ Xác Nhận Đặt Hàng Ngay
                 </button>
@@ -1037,14 +1150,15 @@ CHECKOUT_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
             </div>
             
             <div class="mt-3 pt-2">
+                {% set init_ship = 0 if subtotal >= 299000 else 25000 %}
                 <input type="hidden" id="subtotalValue" value="{{ subtotal }}">
                 <div class="d-flex justify-content-between mb-1 small"><span class="text-muted">Tiền hàng:</span><span>{{ "{:,}".format(subtotal) }}đ</span></div>
                 <div class="d-flex justify-content-between mb-1 small"><span class="text-muted">Đơn vị vận chuyển:</span><strong id="carrierSelectedText" class="text-dark">GHN Express</strong></div>
-                <div class="d-flex justify-content-between mb-2 small"><span class="text-muted">Phí vận chuyển:</span><span id="shipFeeText" class="text-success fw-bold">0đ (Freeship)</span></div>
+                <div class="d-flex justify-content-between mb-2 small"><span class="text-muted">Phí vận chuyển:</span><span id="shipFeeText" class="{% if init_ship == 0 %}text-success{% else %}text-dark{% endif %} fw-bold">{% if init_ship == 0 %}0đ (Freeship đơn từ 299K){% else %}25.000đ (Freeship từ 299K){% endif %}</span></div>
                 <hr class="my-2">
                 <div class="d-flex justify-content-between fs-5 fw-bold">
                     <span>Tổng thanh toán:</span>
-                    <span class="text-danger" id="totalPaymentText">{{ "{:,}".format(subtotal) }}đ</span>
+                    <span class="text-danger" id="totalPaymentText">{{ "{:,}".format(subtotal + init_ship) }}đ</span>
                 </div>
             </div>
         </div>
@@ -1099,22 +1213,21 @@ function selectCarrier(radio) {
     }
     let val = radio.value;
     let subtotal = parseInt(document.getElementById('subtotalValue').value) || 0;
-    let shipFee = 0;
+    let stdFee = subtotal >= 299000 ? 0 : 25000;
+    let shipFee = stdFee;
     let carrierName = 'GHN Express';
 
     if (val.includes('Hỏa Tốc') || val.includes('AhaMove')) {
         shipFee = 15000;
         carrierName = 'AhaMove Hỏa Tốc (1-2h)';
         document.getElementById('shipFeeText').innerHTML = '<span class="text-warning-emphasis fw-bold">+15.000đ</span>';
-    } else if (val.includes('GHTK')) {
-        carrierName = 'GHTK Tiết Kiệm';
-        document.getElementById('shipFeeText').innerHTML = '<span class="text-success fw-bold">0đ (Freeship)</span>';
-    } else if (val.includes('Viettel')) {
-        carrierName = 'Viettel Post';
-        document.getElementById('shipFeeText').innerHTML = '<span class="text-success fw-bold">0đ (Freeship)</span>';
     } else {
-        carrierName = 'GHN Express';
-        document.getElementById('shipFeeText').innerHTML = '<span class="text-success fw-bold">0đ (Freeship)</span>';
+        if (val.includes('GHTK')) carrierName = 'GHTK Tiết Kiệm';
+        else if (val.includes('Viettel')) carrierName = 'Viettel Post';
+        else carrierName = 'GHN Express';
+        document.getElementById('shipFeeText').innerHTML = stdFee === 0
+            ? '<span class="text-success fw-bold">0đ (Freeship đơn từ 299K)</span>'
+            : '<span class="text-dark fw-bold">25.000đ (Freeship từ 299K)</span>';
     }
 
     document.getElementById('carrierSelectedText').innerText = carrierName;
@@ -1585,21 +1698,10 @@ PAYMENT_GATEWAY_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", ""
                 <div class="d-flex justify-content-between py-1"><span class="text-muted">Nội dung:</span><strong class="bg-warning px-2 rounded">NEPNHO {{ order['id'] }}</strong></div>
             </div>
 
-            <div class="mt-4 mx-auto" style="max-width: 480px;">
-                <form action="/confirm-payment/{{ order['id'] }}" method="POST">
-                    <button type="submit" class="btn btn-success btn-lg w-100 py-3 fs-6 shadow fw-bold">
-                        ✅ TÔI ĐÃ HOÀN TẤT CHUYỂN KHOẢN (BẤM THỦ CÔNG)
-                    </button>
-                </form>
-                <div class="text-muted small mt-2">Hệ thống sẽ tự động chuyển trang khi tài khoản nhận tiền hoặc bạn bấm xác nhận.</div>
-            </div>
-
-            <!-- NÚT MÔ PHỎNG DÀNH CHO DEMO / CHẤM ĐỒ ÁN -->
-            <div class="mt-3 p-3 bg-light rounded-3 border border-dashed mx-auto text-center" style="max-width: 480px;">
-                <div class="small text-muted mb-2">⚡ <strong>Chế độ Demo / Test:</strong> Mô phỏng App MBBank của Admin nhận được tiền (nghe chuông Ting Ting và tự động chuyển trang):</div>
-                <button type="button" class="btn btn-sm btn-outline-success fw-bold px-3 py-1" onclick="simulateBankTransfer()">
-                    💸 Thử Ngay: Giả Lập Ngân Hàng Báo Có Tiền (Ting Ting) ↗
-                </button>
+            <div class="mt-3 mx-auto" style="max-width: 480px;">
+                <div class="alert alert-light border small text-muted mb-0">
+                    Hệ thống sẽ tự động cập nhật trạng thái đơn hàng ngay sau khi ngân hàng xác nhận tiền đã vào tài khoản.
+                </div>
             </div>
             {% endif %}
         </div>
@@ -1691,17 +1793,6 @@ function checkPaymentStatus() {
 
 // Kiểm tra ngầm mỗi 2 giây
 let checkInterval = setInterval(checkPaymentStatus, 2000);
-
-// Nút bấm giả lập biến động số dư ngân hàng (Dành cho demo)
-function simulateBankTransfer() {
-    fetch('/api/simulate-bank-transfer/{{ order["id"] }}', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                checkPaymentStatus();
-            }
-        });
-}
 {% endif %}
 </script>
 """)
@@ -1883,18 +1974,6 @@ AUTH_TEMPLATE_CONTENT = """
                         </button>
                     </form>
 
-                    <!-- HỘP ĐIỀN NHANH TÀI KHOẢN ADMIN / DEMO -->
-                    <div class="p-3 bg-light rounded-3 border mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="small fw-bold text-dark">⚡ Tài Khoản Quản Trị Viên (Demo):</span>
-                            <span class="badge bg-success bg-opacity-10 text-success">Admin</span>
-                        </div>
-                        <div class="small text-muted mb-2 font-monospace">admin@nepnho.vn | admin123</div>
-                        <button type="button" class="btn btn-sm btn-outline-dark w-100 fw-bold" onclick="fillAdminDemo()">
-                            👉 Bấm để Tự Điền Tài Khoản Admin Demo
-                        </button>
-                    </div>
-
                     <div class="text-center small text-muted">
                         Chưa có tài khoản? <a href="javascript:void(0)" onclick="switchAuthTab('register')" class="text-success fw-bold text-decoration-none">Đăng ký thành viên mới ngay →</a>
                     </div>
@@ -1970,13 +2049,6 @@ function switchAuthTab(tab) {
     }
 }
 
-function fillAdminDemo() {
-    const em = document.getElementById('loginEmail');
-    const pw = document.getElementById('loginPass');
-    if (em) em.value = 'admin@nepnho.vn';
-    if (pw) pw.value = 'admin123';
-}
-
 function togglePasswordVisibility(id) {
     const input = document.getElementById(id);
     if (input) {
@@ -1996,7 +2068,16 @@ PROFILE_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
             <div class="text-center mb-3"><div class="fs-1">👤</div><h5 class="fw-bold mb-0">{{ user['fullname'] }}</h5></div>
             <div class="small mb-2"><strong>Email:</strong> {{ user['email'] }}</div>
             <div class="small mb-3"><strong>Điện thoại:</strong> {{ user['phone'] }}</div>
-            <a href="/logout" class="btn btn-outline-danger btn-sm w-100">Đăng xuất</a>
+            <form action="/logout" method="POST" class="mb-3">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100">Đăng xuất</button>
+            </form>
+            <hr>
+            <h6 class="fw-bold mb-2">🔒 Đổi mật khẩu</h6>
+            <form action="/change-password" method="POST">
+                <input type="password" name="current_password" class="form-control form-control-sm mb-2" required placeholder="Mật khẩu hiện tại">
+                <input type="password" name="new_password" class="form-control form-control-sm mb-2" required minlength="6" placeholder="Mật khẩu mới (>= 6 ký tự)">
+                <button type="submit" class="btn btn-sm btn-sage w-100">Cập nhật mật khẩu</button>
+            </form>
         </div>
     </div>
     <div class="col-md-8">
@@ -2043,7 +2124,9 @@ ADMIN_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
     </div>
     <div class="d-flex gap-2">
         <a href="/" class="btn btn-outline-dark fw-bold">🏠 Về Cửa Hàng</a>
-        <a href="/logout" class="btn btn-danger fw-bold px-3">🚪 Đăng Xuất Admin</a>
+        <form action="/logout" method="POST" class="m-0">
+            <button type="submit" class="btn btn-danger fw-bold px-3">🚪 Đăng Xuất Admin</button>
+        </form>
     </div>
 </div>
 
@@ -2245,31 +2328,98 @@ ADMIN_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
 </div>
 """)
 
+POLICY_HTML = BASE_HTML.replace("{% block content %}{% endblock %}", """
+<div class="row justify-content-center my-4">
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm bg-white rounded-4 p-4 p-md-5">
+            <div class="mb-3"><a href="/" class="text-decoration-none text-success fw-bold small">← Quay về Trang chủ</a></div>
+            <h2 class="fw-bold text-dark mb-3">{{ title }}</h2>
+            <div class="text-secondary lh-lg">{{ content | safe }}</div>
+        </div>
+    </div>
+</div>
+""")
+
 # ==============================================================================
 # CONTROLLERS & ROUTES (XỬ LÝ NGHIỆP VỤ)
 # ==============================================================================
 
+def _can_access_order(order_id, order):
+    user = _get_current_user()
+    if user:
+        if user.get('role') == 'admin':
+            return True
+        if order.get('email') and order.get('email') == user.get('email'):
+            return True
+    return order_id in session.get('guest_orders', [])
+
+
 @app.context_processor
 def inject_global_vars():
-    user = session.get('user')
+    if '_csrf_token' not in session:
+        session['_csrf_token'] = secrets.token_hex(24)
+    user = _sanitized_user(_get_current_user())
     cart = session.get('cart', [])
     cart_count = sum(item['qty'] for item in cart)
     cart_subtotal = sum(item['price'] * item['qty'] for item in cart)
     bank_config = DB.get('bank_config', DEFAULT_BANK_CONFIG)
-    return dict(current_user=user, cart_count=cart_count, cart_subtotal=cart_subtotal, bank_config=bank_config)
+    support_phone = os.environ.get('SUPPORT_PHONE', 'Liên hệ Email/Zalo (8h-22h)')
+    return dict(
+        current_user=user,
+        cart_count=cart_count,
+        cart_subtotal=cart_subtotal,
+        bank_config=bank_config,
+        csrf_token=session['_csrf_token'],
+        support_phone=support_phone,
+    )
 
 @app.route('/')
 def index():
     view = request.args.get('view')
     is_embed = request.args.get('embed') == '1'
+    user = _get_current_user()
+    show_switcher = bool(request.args.get('preview') == '1' or (user and user.get('role') == 'admin'))
     if view == 'tablet':
-        return render_template_string(TABLET_TEMPLATE, products=DB['products'], current_mode='tablet', current_mode_label='Tablet (768px-1024px)', is_embed=is_embed)
+        return render_template_string(TABLET_TEMPLATE, products=DB['products'], current_mode='tablet', current_mode_label='Tablet (768px-1024px)', is_embed=is_embed, show_device_switcher=show_switcher)
     elif view == 'mobile':
-        return render_template_string(MOBILE_TEMPLATE, products=DB['products'], current_mode='mobile', current_mode_label='Mobile App (375px-430px)', is_embed=is_embed)
+        return render_template_string(MOBILE_TEMPLATE, products=DB['products'], current_mode='mobile', current_mode_label='Mobile App (375px-430px)', is_embed=is_embed, show_device_switcher=show_switcher)
     elif view in ('demo', 'preview'):
-        return render_template_string(DEMO_SHOWCASE_TEMPLATE, products=DB['products'], current_mode='demo', current_mode_label='Bộ 3 Giao Diện Simulator', is_embed=is_embed)
+        return render_template_string(DEMO_SHOWCASE_TEMPLATE, products=DB['products'], current_mode='demo', current_mode_label='Bộ 3 Giao Diện Simulator', is_embed=is_embed, show_device_switcher=True)
     else:
-        return render_template_string(DESKTOP_TEMPLATE, products=DB['products'], current_mode='desktop', current_mode_label='Desktop (>1200px)', is_embed=is_embed)
+        return render_template_string(DESKTOP_TEMPLATE, products=DB['products'], current_mode='desktop', current_mode_label='Desktop (>1200px)', is_embed=is_embed, show_device_switcher=show_switcher)
+
+@app.route('/chinh-sach/<slug>')
+def policy_page(slug):
+    policies = {
+        'gioi-thieu': (
+            '🌿 Câu Chuyện Thương Hiệu Nếp Nhỏ',
+            '<p><strong>Nếp Nhỏ</strong> ra đời với sứ mệnh giúp sinh viên, người trẻ và các gia đình sống trong không gian vừa & nhỏ sắp xếp góc làm việc, bàn trang điểm và phòng ngủ gọn gàng hơn chỉ trong 15 phút.</p><p>Mọi sản phẩm đều được tuyển chọn theo tiêu chí: tối giản, dễ lắp đặt không cần khoan đục, phù hợp phòng trọ và căn hộ nhỏ.</p>'
+        ),
+        'giai-phap': (
+            '✨ Giải Pháp Sắp Xếp Phòng & Bộ Kit Nếp Nhỏ',
+            '<p>Chúng tôi chia giải pháp theo từng khu vực sinh hoạt: <strong>Bàn trang điểm</strong> (kệ xoay 360°, gương LED, hộp bông tẩy trang), <strong>Bàn học & làm việc</strong> (hộp giấu dây điện, bộ kit Nếp Bàn), và <strong>Tủ đồ & phòng ngủ</strong> (hộp khung thép, set chia ngăn, kệ giày gấp gọn).</p>'
+        ),
+        'van-chuyen': (
+            '🚚 Chính Sách Vận Chuyển & Định Vị Giao Hàng',
+            '<p>Đơn hàng được xuất trực tiếp từ <strong>Kho Trung Tâm Quận 9 (TP. Thủ Đức, TP.HCM)</strong> thông qua các đối tác GHN, GHTK, Viettel Post và AhaMove (Hỏa tốc 1–2h nội thành TP.HCM).</p><ul><li>Miễn phí vận chuyển tiêu chuẩn cho đơn hàng từ 299.000đ (hoặc theo chương trình ưu đãi hiển thị khi thanh toán).</li><li>Giao hỏa tốc nội thành TP.HCM: phụ thu 15.000đ.</li><li>Tọa độ GPS (nếu khách hàng đồng ý cung cấp) chỉ được dùng để hỗ trợ bưu tá giao đúng vị trí.</li></ul>'
+        ),
+        'doi-tra': (
+            '🔄 Chính Sách Đổi Trả & Bảo Hành 7 Ngày (1 Đổi 1)',
+            '<p>Nếp Nhỏ áp dụng thống nhất chính sách <strong>Đổi trả / Bảo hành 1 đổi 1 miễn phí trong vòng 7 ngày</strong> kể từ ngày khách hàng nhận hàng thành công.</p><ul><li><strong>Điều kiện áp dụng:</strong> Sản phẩm bị vỡ, nứt, thiếu phụ kiện hoặc lỗi từ nhà sản xuất trong quá trình vận chuyển.</li><li><strong>Yêu cầu xác minh:</strong> Quý khách vui lòng cung cấp <strong>video mở hộp (unbox) liền mạch</strong> để bộ phận CSKH xử lý đổi mới nhanh chóng.</li><li>Không áp dụng đổi trả với sản phẩm đã qua sử dụng hoặc hư hỏng do tác động ngoài ý muốn sau khi nhận hàng.</li></ul>'
+        ),
+        'thanh-toan': (
+            '💳 Chính Sách Thanh Toán VietQR & COD',
+            '<p>Khách hàng có thể lựa chọn 1 trong 2 phương thức:</p><ul><li><strong>Chuyển khoản VietQR:</strong> Quét mã QR đúng số tiền và nội dung <code>NEPNHO &lt;Mã đơn&gt;</code>. Đơn hàng chưa thanh toán sẽ tự động hủy sau 24 giờ và hoàn lại tồn kho. Đơn hàng chỉ được xác nhận <em>Đã thanh toán</em> sau khi hệ thống đối soát nhận tiền thành công.</li><li><strong>Thanh toán khi nhận hàng (COD):</strong> Thanh toán tiền mặt cho bưu tá khi nhận kiện hàng.</li></ul>'
+        ),
+        'bao-mat': (
+            '🔒 Chính Sách Bảo Mật & Quyền Riêng Tư',
+            '<p>Nếp Nhỏ cam kết bảo vệ thông tin cá nhân của khách hàng theo quy định pháp luật hiện hành.</p><ul><li><strong>Thông tin thu thập:</strong> Họ tên, số điện thoại, email, địa chỉ giao hàng và tọa độ GPS (chỉ thu thập khi bạn chủ động bấm định vị và đồng ý).</li><li><strong>Mục đích sử dụng:</strong> Xác nhận đơn hàng, giao hàng chính xác qua đơn vị vận chuyển và hỗ trợ đổi trả/bảo hành.</li><li><strong>Lưu trữ & Chia sẻ:</strong> Chúng tôi không bán hoặc chia sẻ thông tin cá nhân cho bên thứ ba ngoài mục đích giao nhận đơn hàng.</li></ul>'
+        ),
+    }
+    if slug not in policies:
+        abort(404)
+    title, content = policies[slug]
+    return render_template_string(POLICY_HTML, title=title, content=content)
 
 @app.route('/product/<pid>')
 def product_detail(pid):
@@ -2283,6 +2433,13 @@ def product_detail(pid):
 def login():
     next_url = _safe_next_url(request.args.get('next') or request.form.get('next'))
     if request.method == 'POST':
+        client_ip = request.remote_addr or 'unknown'
+        now = time.time()
+        LOGIN_ATTEMPTS[client_ip] = [t for t in LOGIN_ATTEMPTS[client_ip] if now - t < LOGIN_LOCK_SECONDS]
+        if len(LOGIN_ATTEMPTS[client_ip]) >= MAX_LOGIN_ATTEMPTS:
+            flash("Bạn đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 5 phút!", "danger")
+            return render_template_string(LOGIN_HTML, next_url=next_url, active_tab='login'), 429
+
         login_input = (request.form.get('email') or request.form.get('login_id') or '').strip()
         password = request.form.get('password') or ''
         
@@ -2305,9 +2462,12 @@ def login():
                 break
                 
         if user and check_password_hash(user['password'], password):
-            session['user'] = user
+            LOGIN_ATTEMPTS[client_ip].clear()
+            session['user_id'] = user['email']
+            session['session_version'] = int(user.get('session_version', 1))
             flash(f"Chào mừng {user['fullname']}!", "success")
             return redirect(next_url)
+        LOGIN_ATTEMPTS[client_ip].append(now)
         flash("Email, Số điện thoại hoặc mật khẩu không chính xác!", "danger")
     return render_template_string(LOGIN_HTML, next_url=next_url, active_tab='login')
 
@@ -2342,28 +2502,56 @@ def register():
             'fullname': fullname,
             'phone': phone,
             'address': (request.form.get('address') or '').strip(),
-            'role': 'customer'
+            'role': 'customer',
+            'session_version': 1
         }
         with DB_LOCK:
             DB['users'][email] = new_user
             save_data(DB)
-        session['user'] = new_user
+        session['user_id'] = new_user['email']
+        session['session_version'] = 1
         flash(f"Chúc mừng {new_user['fullname']} đã đăng ký thành công!", "success")
         return redirect(next_url)
     return render_template_string(REGISTER_HTML, next_url=next_url, active_tab='register')
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     session.pop('user', None)
+    session.pop('user_id', None)
+    session.pop('session_version', None)
     return redirect('/')
+
+@app.route('/change-password', methods=['POST'])
+def change_password():
+    user = _get_current_user()
+    if not user:
+        return redirect('/login')
+    cur_pw = request.form.get('current_password') or ''
+    new_pw = request.form.get('new_password') or ''
+    if len(new_pw) < 6:
+        flash("Mật khẩu mới phải có ít nhất 6 ký tự!", "warning")
+        return redirect('/profile')
+    email = user.get('email')
+    with DB_LOCK:
+        db_user = DB['users'].get(email)
+        if not db_user or not check_password_hash(db_user['password'], cur_pw):
+            flash("Mật khẩu hiện tại không đúng!", "danger")
+            return redirect('/profile')
+        db_user['password'] = generate_password_hash(new_pw)
+        db_user['session_version'] = int(db_user.get('session_version', 1)) + 1
+        save_data(DB)
+        session['user_id'] = db_user['email']
+        session['session_version'] = db_user['session_version']
+    flash("Đã đổi mật khẩu thành công! Các phiên đăng nhập cũ đã bị đăng xuất.", "success")
+    return redirect('/profile')
 
 @app.route('/profile')
 def profile():
-    user = session.get('user')
+    user = _get_current_user()
     if not user:
         return redirect('/login')
     my_orders = {oid: o for oid, o in DB['orders'].items() if o.get('email') == user['email']}
-    return render_template_string(PROFILE_HTML, user=user, my_orders=my_orders)
+    return render_template_string(PROFILE_HTML, user=_sanitized_user(user), my_orders=my_orders)
 
 @app.route('/add-to-cart', methods=['POST'])
 def add_to_cart():
@@ -2417,10 +2605,7 @@ def add_to_cart():
 
 @app.route('/cart')
 def view_cart():
-    user = session.get('user')
-    if not user:
-        flash("Vui lòng đăng nhập để xem giỏ hàng và đồng bộ vị trí giao hàng!", "warning")
-        return redirect(url_for('login', next='/cart'))
+    user = _sanitized_user(_get_current_user()) or session.get('guest_location')
     cart = session.get('cart', [])
     subtotal = sum(item['price'] * item['qty'] for item in cart)
     return render_template_string(CART_HTML, cart=cart, subtotal=subtotal, user_info=user)
@@ -2451,7 +2636,7 @@ def update_cart():
     session['cart'] = cart
     return redirect('/cart')
 
-@app.route('/remove-cart/<pid>')
+@app.route('/remove-cart/<pid>', methods=['POST'])
 def remove_cart(pid):
     cart = [i for i in session.get('cart', []) if i['id'] != pid]
     session['cart'] = cart
@@ -2459,10 +2644,7 @@ def remove_cart(pid):
 
 @app.route('/checkout')
 def checkout():
-    user = session.get('user')
-    if not user:
-        flash("Vui lòng đăng nhập để xác nhận địa chỉ và vị trí giao hàng!", "warning")
-        return redirect(url_for('login', next='/checkout'))
+    user = _sanitized_user(_get_current_user()) or session.get('guest_location')
     cart = session.get('cart', [])
     if not cart:
         flash("Giỏ hàng của bạn đang trống!", "info")
@@ -2472,66 +2654,80 @@ def checkout():
 
 @app.route('/api/update-location', methods=['POST'])
 def update_location():
-    user = session.get('user')
-    if not user:
-        return jsonify({'status': 'error', 'message': 'Vui lòng đăng nhập để lưu vị trí giao hàng!'}), 401
-    
-    email = user.get('email')
+    user = _get_current_user()
     lat = request.form.get('lat')
     lng = request.form.get('lng')
     address = request.form.get('address')
     
     if not address and lat and lng:
         address = f"Tọa độ GPS: {float(lat):.5f}, {float(lng):.5f}"
-    
-    if email in DB['users']:
-        if lat and lng:
-            DB['users'][email]['gps_lat'] = lat
-            DB['users'][email]['gps_lng'] = lng
-        if address:
-            DB['users'][email]['address'] = address
-        save_data(DB)
-        session['user'] = DB['users'][email]
+
+    if not user:
+        session['guest_location'] = {'address': address, 'gps_lat': lat, 'gps_lng': lng}
         return jsonify({
             'status': 'success',
-            'message': 'Đã xác định vị trí và lưu vào database thành công!',
-            'address': session['user'].get('address'),
-            'gps_lat': session['user'].get('gps_lat'),
-            'gps_lng': session['user'].get('gps_lng')
+            'message': 'Đã lưu tạm vị trí giao hàng cho đơn hiện tại!',
+            'address': address,
+            'gps_lat': lat,
+            'gps_lng': lng
+        })
+    
+    email = user.get('email')
+    if email in DB['users']:
+        with DB_LOCK:
+            if lat and lng:
+                DB['users'][email]['gps_lat'] = lat
+                DB['users'][email]['gps_lng'] = lng
+            if address:
+                DB['users'][email]['address'] = address
+            save_data(DB)
+        return jsonify({
+            'status': 'success',
+            'message': 'Đã xác định vị trí và lưu vào tài khoản thành công!',
+            'address': DB['users'][email].get('address'),
+            'gps_lat': DB['users'][email].get('gps_lat'),
+            'gps_lng': DB['users'][email].get('gps_lng')
         })
     return jsonify({'status': 'error', 'message': 'Không tìm thấy người dùng'}), 404
 
 @app.route('/process-order', methods=['POST'])
 def process_order():
-    user = session.get('user')
-    if not user:
-        flash("Vui lòng đăng nhập để đặt hàng!", "warning")
-        return redirect(url_for('login', next='/checkout'))
+    user = _get_current_user()
     cart = session.get('cart', [])
     if not cart:
         return redirect('/')
+    if not request.form.get('privacy_consent'):
+        flash("Vui lòng đồng ý với Chính sách bảo mật trước khi đặt hàng!", "warning")
+        return redirect('/checkout')
     
-    order_id = ''.join(random.choices(string.digits, k=6))
     fullname = (request.form.get('fullname') or '').strip()
     phone = (request.form.get('phone') or '').strip()
+    guest_email = (request.form.get('email') or '').strip().lower()
     if not fullname or not phone:
         flash("Vui lòng nhập đầy đủ họ tên và số điện thoại nhận hàng!", "warning")
         return redirect('/checkout')
 
     with DB_LOCK:
-        # Kiểm tra tồn kho khả dụng (ATP) cho toàn bộ giỏ hàng trước khi chốt đơn
+        # Sinh mã đơn duy nhất không trùng lặp
+        while True:
+            order_id = ''.join(random.choices(string.digits, k=6))
+            if order_id not in DB['orders']:
+                break
+
+        # Kiểm tra tồn kho khả dụng cho toàn bộ giỏ hàng trước khi chốt đơn
         for item in cart:
             pid = item.get('id')
+            qty = int(item.get('qty', 0))
             product = DB['products'].get(pid)
-            if not product or _get_available_stock(product) < int(item.get('qty', 0)):
+            if qty < 1 or not product or _get_available_stock(product) < qty:
                 avail = _get_available_stock(product) if product else 0
                 flash(f"Sản phẩm '{item.get('name')}' không đủ tồn kho (còn {avail}). Vui lòng cập nhật giỏ hàng!", "danger")
                 return redirect('/cart')
 
-        subtotal = sum(item['price'] * item['qty'] for item in cart)
+        subtotal = sum(DB['products'][item['id']]['price'] * int(item['qty']) for item in cart)
         payment_method = request.form.get('payment_method', 'VIETQR')
         shipping_carrier = request.form.get('shipping_carrier', 'Giao Hàng Nhanh (GHN Express)')
-        shipping_fee = 15000 if ('Hỏa Tốc' in shipping_carrier or 'AhaMove' in shipping_carrier) else 0
+        shipping_fee = _calc_shipping_fee(subtotal, shipping_carrier)
         final_total = subtotal + shipping_fee
         
         # THU THẬP THÔNG TIN ĐỊA CHỈ KHU VỰC VÀ TỌA ĐỘ GPS
@@ -2544,17 +2740,17 @@ def process_order():
         
         full_address = f"{street_address}, {ward}, {district}, {province}".strip(', ')
 
-        # CẬP NHẬT VÀ LƯU VỊ TRÍ VÀO TÀI KHOẢN NGƯỜI DÙNG TRONG DATABASE
-        user_email = user.get('email')
-        if user_email and user_email in DB['users']:
+        # CẬP NHẬT VÀ LƯU VỊ TRÍ VÀO TÀI KHOẢN NGƯỜI DÙNG TRONG DATABASE (NẾU ĐÃ ĐĂNG NHẬP)
+        user_email = user.get('email') if user else guest_email
+        if user and user.get('email') in DB['users']:
+            u_key = user.get('email')
             if full_address:
-                DB['users'][user_email]['address'] = full_address
+                DB['users'][u_key]['address'] = full_address
             if geo_lat and geo_lng:
-                DB['users'][user_email]['gps_lat'] = geo_lat
-                DB['users'][user_email]['gps_lng'] = geo_lng
+                DB['users'][u_key]['gps_lat'] = geo_lat
+                DB['users'][u_key]['gps_lng'] = geo_lng
             if phone:
-                DB['users'][user_email]['phone'] = phone
-            session['user'] = DB['users'][user_email]
+                DB['users'][u_key]['phone'] = phone
         
         now_dt = datetime.now()
         now_ts = now_dt.timestamp()
@@ -2581,20 +2777,25 @@ def process_order():
             'total': final_total,
             'items': cart,
             'status': 'Chờ thanh toán VietQR' if payment_method == 'VIETQR' else 'Chờ xác nhận (COD)',
+            'stock_state': 'committed',
             'created_at': now_dt.strftime("%H:%M %d/%m/%Y"),
             'created_timestamp': now_ts,
             'expires_at_timestamp': expires_at_ts,
             'paid_at': ''
         }
         
-        # Khóa giữ tồn kho ATP
+        # Khóa giữ tồn kho
         for item in cart:
             pid = item['id']
             if pid in DB['products']:
-                DB['products'][pid]['stock_committed'] += item['qty']
+                DB['products'][pid]['stock_committed'] += int(item['qty'])
 
         DB['orders'][order_id] = order
         save_data(DB)
+
+    guest_orders = session.get('guest_orders', [])
+    guest_orders.append(order_id)
+    session['guest_orders'] = guest_orders
     session['cart'] = []
     
     if payment_method == 'VIETQR':
@@ -2605,45 +2806,22 @@ def process_order():
 @app.route('/payment/<order_id>')
 def payment_gateway(order_id):
     order = DB['orders'].get(order_id)
-    if not order:
+    if not order or not _can_access_order(order_id, order):
+        flash("Bạn không có quyền truy cập đơn hàng này!", "warning")
         return redirect('/')
     if order.get('payment_status') == 'Đã thanh toán':
         return redirect(f'/payment-success/{order_id}')
 
     is_expired = False
-    if order.get('status') == 'Đã tự hủy (Quá hạn 24h)' or time.time() >= order.get('expires_at_timestamp', 0):
+    if order.get('status') in ['Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy'] or time.time() >= order.get('expires_at_timestamp', 0):
         is_expired = True
 
     return render_template_string(PAYMENT_GATEWAY_HTML, order=order, is_expired=is_expired)
 
-@app.route('/confirm-payment/<order_id>', methods=['POST', 'GET'])
-def confirm_payment(order_id):
-    user = session.get('user')
-    order = DB['orders'].get(order_id)
-    if not order:
-        return redirect('/')
-    if not user or (user.get('role') != 'admin' and user.get('email') != order.get('email')):
-        flash("Vui lòng đăng nhập đúng tài khoản đặt hàng để xác nhận!", "warning")
-        return redirect(url_for('login', next=f'/payment/{order_id}'))
-        
-    if order.get('status') in ['Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy'] or time.time() >= order.get('expires_at_timestamp', 0):
-        flash("Đơn hàng đã hết hạn hoặc đã hủy!", "danger")
-        return redirect(f'/payment/{order_id}')
-        
-    with DB_LOCK:
-        # CHUYỂN NGAY SANG: ĐƠN HÀNG ĐANG ĐƯỢC CHUẨN BỊ
-        order['status'] = 'Đơn hàng đang được chuẩn bị'
-        order['payment_status'] = 'Đã thanh toán'
-        order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
-        save_data(DB)
-    
-    flash("Thanh toán thành công! Đơn hàng đang được chuẩn bị tại kho.", "success")
-    return redirect(f'/payment-success/{order_id}')
-
 @app.route('/payment-success/<order_id>')
 def payment_success(order_id):
     order = DB['orders'].get(order_id)
-    if not order:
+    if not order or not _can_access_order(order_id, order):
         return redirect('/')
     return render_template_string(PAYMENT_SUCCESS_HTML, order=order)
 
@@ -2657,6 +2835,8 @@ def api_check_payment(order_id):
     order = DB['orders'].get(order_id)
     if not order:
         return jsonify({'status': 'not_found', 'is_paid': False}), 404
+    if not _can_access_order(order_id, order):
+        return jsonify({'status': 'forbidden', 'is_paid': False}), 403
     
     is_paid = (order.get('payment_status') == 'Đã thanh toán')
     return jsonify({
@@ -2666,49 +2846,42 @@ def api_check_payment(order_id):
         'payment_status': order.get('payment_status', '')
     })
 
-@app.route('/api/simulate-bank-transfer/<order_id>', methods=['POST', 'GET'])
-def api_simulate_bank_transfer(order_id):
-    """Mô phỏng tài khoản MBBank của Admin nhận biến động số dư đúng mã đơn"""
-    user = session.get('user')
-    is_demo_enabled = os.environ.get('ENABLE_DEMO_PAYMENT', '1') == '1'
-    if not is_demo_enabled and (not user or user.get('role') != 'admin'):
-        return jsonify({'status': 'error', 'message': 'Chế độ giả lập đã tắt trên môi trường Production'}), 403
-
-    order = DB['orders'].get(order_id)
-    if not order:
-        return jsonify({'status': 'error', 'message': 'Không tìm thấy đơn hàng'}), 404
-    if order.get('status') in ['Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy'] or time.time() >= order.get('expires_at_timestamp', 0):
-        return jsonify({'status': 'error', 'message': 'Đơn hàng đã hết hạn hoặc đã hủy'}), 400
-    
-    with DB_LOCK:
-        order['status'] = 'Đơn hàng đang được chuẩn bị'
-        order['payment_status'] = 'Đã thanh toán'
-        order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
-        save_data(DB)
-    return jsonify({
-        'status': 'success',
-        'message': f"Đã nhận biến động số dư ngân hàng cho đơn #{order_id} (+{order['total']:,}đ)!",
-        'order_id': order_id,
-        'is_paid': True
-    })
-
 @app.route('/webhook/bank-transfer', methods=['POST'])
 def webhook_bank_transfer():
     """
-    Webhook tiếp nhận biến động số dư tự động từ dịch vụ ngân hàng (SePay / Casso / MBBank / Techcombank)
-    Khi tiền vào tài khoản ngân hàng thật của Admin, SePay/Casso sẽ gọi URL này.
-    Ví dụ nội dung: 'NEPNHO 123456'
+    Webhook tiếp nhận biến động số dư tự động từ dịch vụ ngân hàng (SePay / Casso)
+    Bắt buộc cấu hình WEBHOOK_SECRET, kiểm tra tiền vào, đúng STK nhận, đủ số tiền và chống trùng giao dịch.
     """
     expected_secret = os.environ.get('WEBHOOK_SECRET')
-    if expected_secret:
-        auth_header = request.headers.get('Authorization', '')
-        api_key_header = request.headers.get('X-Webhook-Secret', '')
-        if api_key_header != expected_secret and auth_header != f"Apikey {expected_secret}" and auth_header != f"Bearer {expected_secret}":
-            return jsonify({'status': 'error', 'message': 'Unauthorized webhook'}), 401
+    if not expected_secret:
+        return jsonify({'status': 'error', 'message': 'Webhook chưa được cấu hình WEBHOOK_SECRET'}), 503
+
+    auth_header = request.headers.get('Authorization', '')
+    api_key_header = request.headers.get('X-Webhook-Secret', '')
+    if not (
+        secrets.compare_digest(api_key_header, expected_secret)
+        or secrets.compare_digest(auth_header, f"Apikey {expected_secret}")
+        or secrets.compare_digest(auth_header, f"Bearer {expected_secret}")
+    ):
+        return jsonify({'status': 'error', 'message': 'Unauthorized webhook'}), 401
 
     data = request.get_json(silent=True) or request.form.to_dict()
     if not data:
         return jsonify({'status': 'error', 'message': 'Không có dữ liệu'}), 400
+
+    # Chỉ xử lý giao dịch tiền vào (SePay transferType == 'in')
+    transfer_type = str(data.get('transferType') or '').strip().lower()
+    if transfer_type and transfer_type != 'in':
+        return jsonify({'status': 'ignored', 'message': 'Chỉ xử lý giao dịch tiền vào'}), 200
+
+    # Kiểm tra đúng số tài khoản nhận nếu payload có cung cấp
+    expected_acc = str(DB.get('bank_config', DEFAULT_BANK_CONFIG).get('account_number', '')).strip()
+    incoming_acc = str(data.get('accountNumber') or data.get('subAccount') or '').strip()
+    if incoming_acc and expected_acc and incoming_acc != expected_acc:
+        return jsonify({'status': 'ignored', 'message': 'Sai tài khoản nhận'}), 200
+
+    # Chống xử lý trùng mã giao dịch (idempotency)
+    tx_id = str(data.get('id') or data.get('referenceCode') or '').strip()
 
     content = str(data.get('content') or data.get('description') or data.get('code') or '')
     try:
@@ -2721,6 +2894,9 @@ def webhook_bank_transfer():
     if match:
         order_id = match.group(1)
         with DB_LOCK:
+            processed = DB.setdefault('processed_tx_ids', [])
+            if tx_id and tx_id in processed:
+                return jsonify({'status': 'ignored', 'message': 'Giao dịch đã được xử lý trước đó'}), 200
             order = DB['orders'].get(order_id)
             if not order:
                 return jsonify({'status': 'ignored', 'message': 'Không tìm thấy đơn hàng'}), 200
@@ -2733,6 +2909,8 @@ def webhook_bank_transfer():
                 order['payment_status'] = 'Đã thanh toán'
                 order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
                 order['bank_ref'] = data.get('referenceCode', '')
+                if tx_id:
+                    processed.append(tx_id)
                 save_data(DB)
                 return jsonify({
                     'status': 'success',
@@ -2744,43 +2922,41 @@ def webhook_bank_transfer():
 
 @app.route('/cancel-order/<order_id>', methods=['POST'])
 def cancel_order(order_id):
-    user = session.get('user')
-    if not user:
-        return redirect(url_for('login', next=f'/order-status/{order_id}'))
+    user = _get_current_user()
     with DB_LOCK:
         order = DB['orders'].get(order_id)
-        if not order:
-            flash("Không tìm thấy đơn hàng!", "danger")
-            return redirect('/profile')
-        if user.get('role') != 'admin' and order.get('email') != user.get('email'):
+        if not order or not _can_access_order(order_id, order):
             flash("Bạn không có quyền hủy đơn hàng này!", "danger")
-            return redirect('/profile')
+            return redirect('/profile' if user else '/')
         if order.get('status') not in ['Chờ thanh toán VietQR', 'Chờ xác nhận (COD)']:
             flash("Chỉ có thể hủy đơn hàng khi chưa đóng gói/vận chuyển!", "warning")
             return redirect(f'/order-status/{order_id}')
 
         order['status'] = 'Khách hàng đã hủy'
         order['payment_status'] = 'Đã hủy'
-        for item in order.get('items', []):
-            pid = item.get('id')
-            if pid in DB['products']:
-                DB['products'][pid]['stock_committed'] = max(
-                    0, DB['products'][pid]['stock_committed'] - int(item.get('qty', 0))
-                )
+        if order.get('stock_state', 'committed') == 'committed':
+            for item in order.get('items', []):
+                pid = item.get('id')
+                if pid in DB['products']:
+                    DB['products'][pid]['stock_committed'] = max(
+                        0, DB['products'][pid]['stock_committed'] - int(item.get('qty', 0))
+                    )
+            order['stock_state'] = 'released'
         save_data(DB)
     flash(f"Đã hủy đơn hàng #{order_id} và hoàn lại tồn kho.", "info")
-    return redirect('/profile')
+    return redirect('/profile' if user else f'/order-status/{order_id}')
 
 @app.route('/order-status/<order_id>')
 def order_status(order_id):
     order = DB['orders'].get(order_id)
-    if not order:
+    if not order or not _can_access_order(order_id, order):
+        flash("Bạn không có quyền xem đơn hàng này!", "warning")
         return redirect('/')
     return render_template_string(TRACKING_HTML, order=order)
 
 @app.route('/admin')
 def admin_dashboard():
-    user = session.get('user')
+    user = _get_current_user()
     if not user or user.get('role') != 'admin':
         return redirect('/login')
     total_revenue = sum(o['total'] for o in DB['orders'].values() if o.get('payment_status') == 'Đã thanh toán')
@@ -2788,7 +2964,7 @@ def admin_dashboard():
 
 @app.route('/admin/update-order-status', methods=['POST'])
 def admin_update_order():
-    user = session.get('user')
+    user = _get_current_user()
     if not user or user.get('role') != 'admin':
         return redirect('/')
     oid = request.form.get('order_id')
@@ -2796,36 +2972,66 @@ def admin_update_order():
     cancelled_states = ('Đã tự hủy (Quá hạn 24h)', 'Khách hàng đã hủy')
     with DB_LOCK:
         if oid in DB['orders']:
-            old_status = DB['orders'][oid]['status']
-            DB['orders'][oid]['status'] = status
-            if status in ['Đơn hàng đang được chuẩn bị', 'Đã bàn giao 3PL (GHTK/GHN)', 'Giao thành công (POD)']:
-                DB['orders'][oid]['payment_status'] = 'Đã thanh toán'
-                if not DB['orders'][oid].get('paid_at'):
-                    DB['orders'][oid]['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
+            order = DB['orders'][oid]
+            old_status = order['status']
+            stock_state = order.get('stock_state', 'released' if old_status in cancelled_states else 'committed')
+
+            # Không cho mở lại đơn đã giao thành công (POD)
+            if old_status == 'Giao thành công (POD)' and status != 'Giao thành công (POD)':
+                flash("Đơn đã giao thành công (POD), không thể chuyển ngược trạng thái!", "warning")
+                return redirect('/admin')
+
+            # Nếu mở lại đơn từ trạng thái đã hủy -> kiểm tra và giữ lại tồn kho committed
+            if old_status in cancelled_states and status not in cancelled_states:
+                if stock_state == 'released':
+                    for item in order.get('items', []):
+                        pid = item.get('id')
+                        qty = int(item.get('qty', 0))
+                        prod = DB['products'].get(pid)
+                        if not prod or _get_available_stock(prod) < qty:
+                            flash(f"Không đủ tồn kho để mở lại đơn #{oid}!", "danger")
+                            return redirect('/admin')
+                    for item in order.get('items', []):
+                        pid = item.get('id')
+                        qty = int(item.get('qty', 0))
+                        DB['products'][pid]['stock_committed'] += qty
+                    stock_state = 'committed'
+
+            order['status'] = status
+
+            # Chỉ đánh dấu COD là đã thanh toán khi Giao thành công (POD)
+            if status == 'Giao thành công (POD)' and order.get('payment_method') == 'COD':
+                order['payment_status'] = 'Đã thanh toán'
+                if not order.get('paid_at'):
+                    order['paid_at'] = datetime.now().strftime("%H:%M %d/%m/%Y")
 
             # Khi giao thành công (POD) lần đầu: trừ tồn kho vật lý và giải phóng committed
-            if status == 'Giao thành công (POD)' and old_status != 'Giao thành công (POD)' and old_status not in cancelled_states:
-                for item in DB['orders'][oid].get('items', []):
+            if status == 'Giao thành công (POD)' and stock_state == 'committed':
+                for item in order.get('items', []):
                     pid = item.get('id')
                     qty = int(item.get('qty', 0))
                     if pid in DB['products']:
                         DB['products'][pid]['stock_physical'] = max(0, DB['products'][pid]['stock_physical'] - qty)
                         DB['products'][pid]['stock_committed'] = max(0, DB['products'][pid]['stock_committed'] - qty)
+                stock_state = 'deducted'
 
-            # Khi hủy đơn (từ trạng thái chưa hủy & chưa POD): giải phóng tồn kho committed
-            if status in cancelled_states and old_status not in cancelled_states and old_status != 'Giao thành công (POD)':
-                for item in DB['orders'][oid].get('items', []):
+            # Khi hủy đơn: chỉ giải phóng tồn kho nếu đang ở trạng thái 'committed'
+            if status in cancelled_states and stock_state == 'committed':
+                for item in order.get('items', []):
                     pid = item.get('id')
                     qty = int(item.get('qty', 0))
                     if pid in DB['products']:
                         DB['products'][pid]['stock_committed'] = max(0, DB['products'][pid]['stock_committed'] - qty)
+                stock_state = 'released'
+
+            order['stock_state'] = stock_state
             save_data(DB)
             flash(f"Đã cập nhật đơn #{oid} thành '{status}'!", "success")
     return redirect('/admin')
 
 @app.route('/admin/add-product', methods=['POST'])
 def admin_add_product():
-    user = session.get('user')
+    user = _get_current_user()
     if not user or user.get('role') != 'admin':
         return redirect('/')
     pid = (request.form.get('id') or '').strip().upper()
@@ -2864,7 +3070,7 @@ def admin_add_product():
 
 @app.route('/admin/update-product', methods=['POST'])
 def admin_update_product():
-    user = session.get('user')
+    user = _get_current_user()
     if not user or user.get('role') != 'admin':
         return redirect('/')
     pid = (request.form.get('product_id') or '').strip()
@@ -2889,7 +3095,7 @@ def admin_update_product():
 
 @app.route('/admin/delete-product', methods=['POST'])
 def admin_delete_product():
-    user = session.get('user')
+    user = _get_current_user()
     if not user or user.get('role') != 'admin':
         return redirect('/')
     pid = (request.form.get('product_id') or '').strip()
@@ -2908,23 +3114,29 @@ def serve_images(filename):
 @app.route('/desktop')
 def serve_desktop():
     is_embed = request.args.get('embed') == '1'
-    return render_template_string(DESKTOP_TEMPLATE, products=DB['products'], current_mode='desktop', current_mode_label='Desktop (>1200px)', is_embed=is_embed)
+    user = _get_current_user()
+    show_switcher = bool(request.args.get('preview') == '1' or (user and user.get('role') == 'admin'))
+    return render_template_string(DESKTOP_TEMPLATE, products=DB['products'], current_mode='desktop', current_mode_label='Desktop (>1200px)', is_embed=is_embed, show_device_switcher=show_switcher)
 
 @app.route('/tablet')
 def serve_tablet():
     is_embed = request.args.get('embed') == '1'
-    return render_template_string(TABLET_TEMPLATE, products=DB['products'], current_mode='tablet', current_mode_label='Tablet (768px-1024px)', is_embed=is_embed)
+    user = _get_current_user()
+    show_switcher = bool(request.args.get('preview') == '1' or (user and user.get('role') == 'admin'))
+    return render_template_string(TABLET_TEMPLATE, products=DB['products'], current_mode='tablet', current_mode_label='Tablet (768px-1024px)', is_embed=is_embed, show_device_switcher=show_switcher)
 
 @app.route('/mobile')
 def serve_mobile():
     is_embed = request.args.get('embed') == '1'
-    return render_template_string(MOBILE_TEMPLATE, products=DB['products'], current_mode='mobile', current_mode_label='Mobile App (375px-430px)', is_embed=is_embed)
+    user = _get_current_user()
+    show_switcher = bool(request.args.get('preview') == '1' or (user and user.get('role') == 'admin'))
+    return render_template_string(MOBILE_TEMPLATE, products=DB['products'], current_mode='mobile', current_mode_label='Mobile App (375px-430px)', is_embed=is_embed, show_device_switcher=show_switcher)
 
 @app.route('/demo')
 @app.route('/preview')
 def serve_demo():
     is_embed = request.args.get('embed') == '1'
-    return render_template_string(DEMO_SHOWCASE_TEMPLATE, products=DB['products'], current_mode='demo', current_mode_label='Bộ 3 Giao Diện Simulator', is_embed=is_embed)
+    return render_template_string(DEMO_SHOWCASE_TEMPLATE, products=DB['products'], current_mode='demo', current_mode_label='Bộ 3 Giao Diện Simulator', is_embed=is_embed, show_device_switcher=True)
 
 def start_live_server_tunnel():
     # Khi chạy trên Render hoặc môi trường Cloud, Render đã cung cấp HTTPS domain riêng

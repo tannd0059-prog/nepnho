@@ -2,23 +2,25 @@
     "users": {
         "admin@nepnho.vn": {
             "email": "admin@nepnho.vn",
-            "password": "scrypt:32768:8:1$Rmc5JqGOhliuDQpH$a188efd0f032266ab1d62d0f8150da1a4bc6dde60a2dac9fa10975566e8b8d27a269382d7958399907a599a879bde3681561000cb61021a3907c730ac4aba767",
+            "password": "scrypt:32768:8:1$fSg4nWNLlRkk4x1o$befa1f0dbb5faed5d5abcb0463e0835fe6277081209ba3a3e8c4f5f78cb2cfab60f0e2d833712951bbfcc9a1cf7324d3281254ab83914b6fb9b4a4bd8c52980b",
             "fullname": "Quản Trị Viên Nếp Nhỏ",
             "phone": "0900000000",
             "address": "2, Đường Võ Oanh, Phường Thạnh Mỹ Tây, Quận 9 (Kho Trung Tâm), Hồ Chí Minh",
             "role": "admin",
             "gps_lat": "10.805136",
-            "gps_lng": "106.716909"
+            "gps_lng": "106.716909",
+            "session_version": 2
         },
         "tan@gmail.com": {
             "email": "tan@gmail.com",
-            "password": "scrypt:32768:8:1$ffWnlS20XO4UFS2A$5f74384942b38e499e53cdb5aa3e80777e54008ab20188e8fbaac0da76c70a90fd35361a143018a0fa149ebf8c333af68f500285f68a5c5e397de673269f1610",
+            "password": "scrypt:32768:8:1$s0AeZPGlMj6iknMY$002c1480bbab6e7722bfd839b895b650d042f43b40001ab650f7da809cf577097a40f22809a87da17ccd4fea011a13ab87cfbf76a014244f0974668e720decb3",
             "fullname": "Nguyễn Văn Tân",
             "phone": "0901234567",
             "address": "18 đường 297, Phước Long B, Quận 9, TP. Thủ Đức",
             "role": "customer",
             "gps_lat": "10.8350",
-            "gps_lng": "106.7750"
+            "gps_lng": "106.7750",
+            "session_version": 2
         },
         "nyngu99@gmail.com": {
             "email": "nyngu99@gmail.com",
@@ -255,13 +257,13 @@
         },
         "NN-CABLE-BOX": {
             "id": "NN-CABLE-BOX",
-            "name": "Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chống Cháy",
+            "name": "Hộp Quản Lý Ổ Cắm & Giấu Dây Cáp Điện Nắp Gỗ Chịu Nhiệt",
             "price": 115000,
             "original_price": 155000,
             "category": "Góc phòng gọn gàng",
             "description": "Gom gọn toàn bộ ổ cắm 6-8 lỗ và mớ dây sạc rườm rà dưới sàn. Nắp gỗ tự nhiên có rãnh làm giá đỡ điện thoại/ipad khi sạc an toàn.",
             "kit_components": [
-                "Hộp nhựa ABS chống cháy cách điện cao cấp",
+                "Hộp nhựa ABS chịu nhiệt, hạn chế bắt lửa",
                 "Nắp gỗ tre tự nhiên có rãnh đỡ điện thoại",
                 "Các khe thoát khí tản nhiệt thông minh hai bên",
                 "Khe luồn dây hai đầu gọn gàng"
@@ -313,10 +315,10 @@
             "price": 85000,
             "original_price": 120000,
             "category": "Đời sống & Thư giãn",
-            "description": "Thảm lông mềm mịn êm chân đường kính 80cm phong cách Bắc Âu. Đế chống trượt tuyệt đối, tạo điểm nhấn ấm cúng cho góc làm đẹp phòng trọ.",
+            "description": "Thảm lông mềm mịn êm chân đường kính 80cm phong cách Bắc Âu. Đế hạt nổi tăng độ bám chống trượt, tạo điểm nhấn ấm cúng cho góc làm đẹp phòng trọ.",
             "kit_components": [
                 "Lớp lông sợi microfiber mềm mịn chống bết dính",
-                "Đế cao su silicon hạt nổi chống trượt 100%",
+                "Đế silicone hạt nổi tăng độ bám chống trượt",
                 "Dễ dàng giặt máy hoặc vệ sinh hút bụi tiện lợi"
             ],
             "before_img": "/images/tham_long_before.png",
@@ -657,5 +659,6 @@
         "account_number": "0368688548",
         "account_holder": "NGUYEN DUY TAN",
         "qr_template": "compact2"
-    }
+    },
+    "processed_tx_ids": []
 }

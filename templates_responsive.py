@@ -9,16 +9,16 @@ Includes 3 fully functional Jinja2 interfaces:
 """
 
 COMMON_HEADER_SNIPPET = """
-{% if not is_embed %}
+{% if not is_embed and show_device_switcher %}
 <div class="device-switcher-topbar">
     <div class="d-flex align-items-center gap-2">
         <span class="switcher-brand">🌿 NẾP NHỎ CHỌN GIAO DIỆN:</span>
         <span class="switcher-status">Đang xem: <strong>{{ current_mode_label }}</strong></span>
     </div>
     <div class="d-flex align-items-center gap-1">
-        <a href="/desktop" class="switcher-btn {% if current_mode == 'desktop' %}active{% endif %}">🖥️ Desktop</a>
-        <a href="/tablet" class="switcher-btn {% if current_mode == 'tablet' %}active{% endif %}">📱 Tablet</a>
-        <a href="/mobile" class="switcher-btn {% if current_mode == 'mobile' %}active{% endif %}">📲 Mobile</a>
+        <a href="/desktop?preview=1" class="switcher-btn {% if current_mode == 'desktop' %}active{% endif %}">🖥️ Desktop</a>
+        <a href="/tablet?preview=1" class="switcher-btn {% if current_mode == 'tablet' %}active{% endif %}">📱 Tablet</a>
+        <a href="/mobile?preview=1" class="switcher-btn {% if current_mode == 'mobile' %}active{% endif %}">📲 Mobile</a>
         <a href="/demo" class="switcher-btn btn-highlight {% if current_mode == 'demo' %}active{% endif %}">🔲 Xem Cả 3 (Simulator)</a>
     </div>
 </div>
@@ -27,6 +27,8 @@ COMMON_HEADER_SNIPPET = """
 
 COMMON_JS_SNIPPET = """
 <script>
+const CSRF_TOKEN = {{ csrf_token | tojson }};
+
 function switchImg(pid, src, btn) {
     const img = document.getElementById('thumb-' + pid);
     if (img) img.src = src;
@@ -41,11 +43,15 @@ function addCartAjax(pid, name, nextUrl) {
     formData.append('product_id', pid);
     formData.append('qty', 1);
     formData.append('ajax', '1');
+    formData.append('_csrf_token', CSRF_TOKEN);
 
     fetch('/add-to-cart', {
         method: 'POST',
         body: formData,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': CSRF_TOKEN
+        }
     })
     .then(res => res.json())
     .then(data => {
@@ -61,12 +67,19 @@ function addCartAjax(pid, name, nextUrl) {
             if (nextUrl) {
                 window.location.href = nextUrl;
             }
+        } else if (data.message) {
+            showToast('⚠️ ' + data.message);
         }
     })
     .catch(err => {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/add-to-cart';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_csrf_token';
+        csrfInput.value = CSRF_TOKEN;
+        form.appendChild(csrfInput);
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'product_id';
@@ -102,11 +115,9 @@ function showToast(msg) {
 }
 
 function detectAndSaveLocation() {
-    {% if not current_user %}
-    alert("Vui lòng đăng nhập để hệ thống xác định và lưu vị trí giao hàng vào tài khoản của bạn!");
-    window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
-    return;
-    {% endif %}
+    if (!confirm("Bạn đồng ý chia sẻ vị trí (GPS) để Nếp Nhỏ hỗ trợ điền địa chỉ giao hàng chính xác hơn? (Xem Chính sách bảo mật tại /chinh-sach/bao-mat)")) {
+        return;
+    }
 
     if (!navigator.geolocation) {
         alert("Trình duyệt không hỗ trợ định vị GPS tự động!");
@@ -145,10 +156,12 @@ function saveLocationToDb(lat, lng, address) {
     fd.append('lat', lat);
     fd.append('lng', lng);
     fd.append('address', address);
+    fd.append('_csrf_token', CSRF_TOKEN);
 
     fetch('/api/update-location', {
         method: 'POST',
-        body: fd
+        body: fd,
+        headers: { 'X-CSRF-Token': CSRF_TOKEN }
     })
     .then(res => res.json())
     .then(data => {
@@ -180,7 +193,7 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌿 Nếp Nhỏ — Desktop Storefront (Giao diện Máy Tính)</title>
+    <title>🌿 Nếp Nhỏ — Gọn một góc, nhẹ cả ngày</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -274,8 +287,10 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
             <div>🌿 <strong>Nếp Nhỏ D2C:</strong> Gọn một góc, nhẹ cả ngày | Miễn phí giao hàng đơn từ 299.000đ</div>
             <div class="d-flex gap-3">
                 <span>📍 Giao nhanh định vị GPS</span>
-                <span>📞 Hotline: 0901.234.567</span>
+                <span>📞 Hỗ trợ: {{ support_phone }}</span>
+                {% if current_user and current_user.get('role') == 'admin' %}
                 <span>⚙️ <a href="/admin" class="text-white text-decoration-none">Quản trị</a></span>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -325,9 +340,12 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
                         ⚙️ Quản Trị
                     </a>
                     {% endif %}
-                    <a href="/logout" class="btn btn-outline-danger rounded-pill px-3 py-2 fw-bold text-decoration-none" style="font-size: 0.85rem;" title="Bấm để đăng xuất">
-                        🚪 Đăng xuất
-                    </a>
+                    <form action="/logout" method="POST" class="d-inline m-0">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="btn btn-outline-danger rounded-pill px-3 py-2 fw-bold" style="font-size: 0.85rem;" title="Bấm để đăng xuất">
+                            🚪 Đăng xuất
+                        </button>
+                    </form>
                 </div>
                 {% else %}
                 <div class="d-flex align-items-center gap-2">
@@ -343,7 +361,7 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
     <nav class="desktop-nav">
         <div class="desktop-container d-flex gap-1">
             <a class="nav-link-custom active" onclick="filterByCat('all')">Tất cả sản phẩm</a>
-            <a class="nav-link-custom" onclick="filterByCat('Làm đẹp & Bàn trang điểm')">Làm đẹp & Bàn phấn</a>
+            <a class="nav-link-custom" onclick="filterByCat('Làm đẹp & Bàn trang điểm')">Làm đẹp & Bàn trang điểm</a>
             <a class="nav-link-custom" onclick="filterByCat('Bàn học & Làm việc')">Bàn học & Làm việc</a>
             <a class="nav-link-custom" onclick="filterByCat('Tủ đồ & Quần áo')">Tủ đồ & Quần áo</a>
             <a class="nav-link-custom" onclick="filterByCat('Phòng ngủ & Decor chill')">Phòng ngủ & Decor chill</a>
@@ -387,8 +405,8 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
             <div class="commit-card">
                 <div style="font-size: 1.8rem;">🔄</div>
                 <div>
-                    <strong style="font-size: 0.88rem; display: block;">Đổi trả 7 ngày 1:1</strong>
-                    <span style="font-size: 0.75rem; color: #64748B;">Miễn phí nếu vỡ hoặc lỗi mica</span>
+                    <strong style="font-size: 0.88rem; display: block;">Đổi trả 7 ngày 1 đổi 1</strong>
+                    <span style="font-size: 0.75rem; color: #64748B;">Hỗ trợ nếu vỡ/lỗi (có video mở hộp)</span>
                 </div>
             </div>
             <div class="commit-card">
@@ -402,7 +420,7 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
                 <div style="font-size: 1.8rem;">💳</div>
                 <div>
                     <strong style="font-size: 0.88rem; display: block;">VietQR thanh toán 1-chạm</strong>
-                    <span style="font-size: 0.75rem; color: #64748B;">Tự động hủy sau 24h hoàn ATP</span>
+                    <span style="font-size: 0.75rem; color: #64748B;">Đơn chưa thanh toán tự hủy sau 24h</span>
                 </div>
             </div>
         </div>
@@ -437,7 +455,7 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
                     <label class="filter-check"><input type="radio" name="priceRange" value="above300" onchange="filterDesktop()"> <span>Trên 300.000đ</span></label>
                 </div>
 
-                <div class="filter-group-title">TỒN KHO THỰC TẾ (ATP)</div>
+                <div class="filter-group-title">TRẠNG THÁI KHO HÀNG</div>
                 <div>
                     <label class="filter-check"><input type="checkbox" checked disabled> <span>Chỉ hiện sản phẩm sẵn sàng giao</span></label>
                 </div>
@@ -475,8 +493,7 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
                             </div>
                             <div class="card-body-custom">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="badge-atp">⚡ Sẵn giao: {{ p['stock_physical'] - p['stock_committed'] }} món</span>
-                                    <span style="font-size: 0.75rem; color: #64748B;">⭐ 5.0 (48)</span>
+                                    <span class="badge-atp">✓ Còn {{ p['stock_physical'] - p['stock_committed'] }} sản phẩm</span>
                                 </div>
                                 <h3 class="product-title" title="{{ p['name'] }}">{{ p['name'] }}</h3>
                                 <p class="product-desc">{{ p['description'] }}</p>
@@ -511,19 +528,19 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
                     <div class="brand-title mb-2">🌿 NẾP NHỎ</div>
                     <p class="text-muted fs-7 mb-3">Thương hiệu D2C chuyên cung cấp các giải pháp sắp xếp bàn làm việc, góc làm đẹp và không gian phòng trọ gọn gàng, tiện nghi.</p>
                     <div class="fs-7 text-muted">📍 Kho trung tâm: Phường Phước Long B, Quận 9 (TP. Thủ Đức), TP. Hồ Chí Minh</div>
-                    <div class="fs-7 text-muted">📞 Hỗ trợ khách hàng: 0901.234.567 (8h00 - 22h00)</div>
+                    <div class="fs-7 text-muted">📞 Hỗ trợ khách hàng: {{ support_phone }} (8h00 - 22h00)</div>
                 </div>
                 <div class="col-lg-2">
                     <div class="fw-bold mb-2 text-dark">VỀ NẾP NHỎ</div>
-                    <div class="mb-1"><a href="#" class="text-muted text-decoration-none">Câu chuyện thương hiệu</a></div>
-                    <div class="mb-1"><a href="#" class="text-muted text-decoration-none">Giải pháp sắp xếp phòng</a></div>
-                    <div class="mb-1"><a href="#" class="text-muted text-decoration-none">Bộ kit làm đẹp bàn phấn</a></div>
+                    <div class="mb-1"><a href="/chinh-sach/gioi-thieu" class="text-muted text-decoration-none">Câu chuyện thương hiệu</a></div>
+                    <div class="mb-1"><a href="/chinh-sach/giai-phap" class="text-muted text-decoration-none">Giải pháp sắp xếp phòng</a></div>
+                    <div class="mb-1"><a href="/chinh-sach/bao-mat" class="text-muted text-decoration-none">Chính sách bảo mật & GPS</a></div>
                 </div>
                 <div class="col-lg-3">
                     <div class="fw-bold mb-2 text-dark">CHÍNH SÁCH BÁN HÀNG</div>
-                    <div class="mb-1"><a href="#" class="text-muted text-decoration-none">Chính sách vận chuyển GPS</a></div>
-                    <div class="mb-1"><a href="#" class="text-muted text-decoration-none">Bảo hành vỡ hỏng 1 đổi 1</a></div>
-                    <div class="mb-1"><a href="#" class="text-muted text-decoration-none">Chính sách thanh toán VietQR</a></div>
+                    <div class="mb-1"><a href="/chinh-sach/van-chuyen" class="text-muted text-decoration-none">Chính sách vận chuyển GPS</a></div>
+                    <div class="mb-1"><a href="/chinh-sach/doi-tra" class="text-muted text-decoration-none">Đổi trả & Bảo hành 7 ngày (1 đổi 1)</a></div>
+                    <div class="mb-1"><a href="/chinh-sach/thanh-toan" class="text-muted text-decoration-none">Chính sách thanh toán VietQR</a></div>
                 </div>
                 <div class="col-lg-3">
                     <div class="fw-bold mb-2 text-dark">THANH TOÁN TIỆN LỢI</div>
@@ -532,7 +549,7 @@ DESKTOP_TEMPLATE = """<!DOCTYPE html>
                         <span class="badge bg-light text-dark border p-2">💵 Tiền mặt (COD)</span>
                     </div>
                     <div class="p-2 bg-light rounded-3 border fs-7 text-muted">
-                        🔒 Hệ thống xác nhận thanh toán mã QR tự động cập nhật trạng thái đơn hàng tức thời.
+                        🔒 Hệ thống tự động đối soát chuyển khoản qua VietQR và cập nhật trạng thái đơn hàng.
                     </div>
                 </div>
             </div>
@@ -608,7 +625,7 @@ TABLET_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌿 Nếp Nhỏ — Tablet Storefront (Giao diện Máy Tính Bảng 768px-1024px)</title>
+    <title>🌿 Nếp Nhỏ — Gọn một góc, nhẹ cả ngày</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -684,7 +701,10 @@ TABLET_TEMPLATE = """<!DOCTYPE html>
             {% if current_user.get('role') == 'admin' %}
             <a href="/admin" class="btn btn-outline-primary btn-sm rounded-pill px-2 py-1" style="font-size: 0.72rem; font-weight: 600;">⚙️ Admin</a>
             {% endif %}
-            <a href="/logout" class="btn btn-outline-danger btn-sm rounded-pill px-2 py-1" style="font-size: 0.72rem; font-weight: 600;">🚪 Đăng xuất</a>
+            <form action="/logout" method="POST" class="d-inline m-0">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-2 py-1" style="font-size: 0.72rem; font-weight: 600;">🚪 Đăng xuất</button>
+            </form>
             {% else %}
             <a href="/login" class="btn btn-outline-dark btn-sm rounded-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">Đăng nhập</a>
             <a href="/register" class="btn btn-sage btn-sm rounded-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">Đăng ký</a>
@@ -738,7 +758,7 @@ TABLET_TEMPLATE = """<!DOCTYPE html>
             <div class="tablet-card-body">
                 <span class="badge bg-light text-secondary border align-self-start mb-1" style="font-size: 0.68rem;">{{ p.get('category','') }}</span>
                 <h4 class="tablet-title"><a href="/product/{{ pid }}" class="text-dark text-decoration-none">{{ p['name'] }}</a></h4>
-                <div class="badge bg-success bg-opacity-10 text-success align-self-start mb-2" style="font-size: 0.7rem;">⚡ Sẵn giao: {{ p['stock_physical'] - p['stock_committed'] }} món</div>
+                <div class="badge bg-success bg-opacity-10 text-success align-self-start mb-2" style="font-size: 0.7rem;">✓ Còn {{ p['stock_physical'] - p['stock_committed'] }} sản phẩm</div>
                 <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
                     <div>
                         <div class="price-val">{{ "{:,}".format(p['price']) }}đ</div>
@@ -803,8 +823,8 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌿 Nếp Nhỏ — Mobile App Storefront (Giao diện Điện Thoại 375px-430px)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Nếp Nhỏ — Gọn một góc, nhẹ cả ngày</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -888,12 +908,6 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
 
     """ + COMMON_HEADER_SNIPPET + """
 
-    <!-- STATUS BAR -->
-    <div class="phone-status-bar">
-        <span>09:41</span>
-        <span>5G 📶 • 100% 🔋</span>
-    </div>
-
     <!-- HEADER -->
     <header class="mobile-header">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -911,9 +925,12 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
                     ⚙️ Admin
                 </a>
                 {% endif %}
-                <a href="/logout" class="badge bg-danger bg-opacity-10 text-danger border border-danger text-decoration-none px-2 py-1" style="font-size: 0.72rem; font-weight: 700;">
-                    Đăng xuất
-                </a>
+                <form action="/logout" method="POST" class="d-inline m-0">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1" style="font-size: 0.72rem; font-weight: 700;">
+                        Đăng xuất
+                    </button>
+                </form>
                 {% else %}
                 <a href="/login" class="badge bg-success bg-opacity-10 text-success border border-success text-decoration-none px-2 py-1" style="font-size: 0.72rem; font-weight: 700;">
                     Đăng nhập / Đăng ký
@@ -970,13 +987,8 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
 
     <!-- FLASH SALE -->
     <div class="mobile-flash-bar">
-        <span>⚡ FLASH SALE HÔM NAY</span>
-        <div class="d-flex align-items-center gap-1">
-            <span>Kết thúc:</span>
-            <span class="countdown-box" id="ch-h">02</span>:
-            <span class="countdown-box" id="ch-m">45</span>:
-            <span class="countdown-box" id="ch-s">18</span>
-        </div>
+        <span>⚡ ƯU ĐÃI HÔM NAY</span>
+        <span class="small">Freeship đơn từ 299K</span>
     </div>
 
     <!-- 2 COLS GRID -->
@@ -998,7 +1010,7 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
                 <h4 class="mobile-title"><a href="/product/{{ pid }}" class="text-dark text-decoration-none">{{ p['name'] }}</a></h4>
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="price-val">{{ "{:,}".format(p['price']) }}đ</span>
-                    <span class="badge bg-success bg-opacity-10 text-success p-1" style="font-size: 0.62rem;">Sẵn {{ p['stock_physical'] - p['stock_committed'] }}</span>
+                    <span class="badge bg-success bg-opacity-10 text-success p-1" style="font-size: 0.62rem;">Còn {{ p['stock_physical'] - p['stock_committed'] }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     {% if p.get('original_price') %}
@@ -1036,10 +1048,13 @@ MOBILE_TEMPLATE = """<!DOCTYPE html>
             <span class="nav-tab-icon">👤</span>
             <span>Tài khoản</span>
         </a>
-        <a href="/logout" class="nav-tab-item text-danger">
-            <span class="nav-tab-icon">🚪</span>
-            <span>Đăng xuất</span>
-        </a>
+        <form action="/logout" method="POST" class="d-inline m-0">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="nav-tab-item text-danger border-0 bg-transparent p-0">
+                <span class="nav-tab-icon">🚪</span>
+                <span>Đăng xuất</span>
+            </button>
+        </form>
         {% else %}
         <a href="/login" class="nav-tab-item">
             <span class="nav-tab-icon">🔐</span>
