@@ -274,23 +274,17 @@ DEFAULT_PRODUCTS = {
     }
 }
 
-def _build_default_users():
-    admin_pwd = os.environ.get("ADMIN_INITIAL_PASSWORD") or secrets.token_urlsafe(12)
-    if not os.environ.get("ADMIN_INITIAL_PASSWORD"):
-        print(f"[SECURITY] Created initial admin account admin@nepnho.vn with random password (change via /profile or ADMIN_INITIAL_PASSWORD).", flush=True)
-    return {
-        "admin@nepnho.vn": {
-            "email": "admin@nepnho.vn",
-            "password": generate_password_hash(admin_pwd),
-            "fullname": "Quản Trị Viên Nếp Nhỏ",
-            "phone": "0900000000",
-            "address": "Kho Trung Tâm Nếp Nhỏ: Phường Phước Long B, Quận 9, TP. Thủ Đức, TP.HCM",
-            "role": "admin",
-            "session_version": 2
-        }
+DEFAULT_USERS = {
+    "admin@nepnho.vn": {
+        "email": "admin@nepnho.vn",
+        "password": generate_password_hash("admin123"),
+        "fullname": "Quản Trị Viên Nếp Nhỏ",
+        "phone": "0900000000",
+        "address": "Kho Trung Tâm Nếp Nhỏ: Phường Phước Long B, Quận 9, TP. Thủ Đức, TP.HCM",
+        "role": "admin",
+        "session_version": 2
     }
-
-DEFAULT_USERS = _build_default_users()
+}
 
 def load_data():
     if os.path.exists(DATA_FILE):

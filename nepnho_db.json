@@ -2,7 +2,7 @@
     "users": {
         "admin@nepnho.vn": {
             "email": "admin@nepnho.vn",
-            "password": "scrypt:32768:8:1$fSg4nWNLlRkk4x1o$befa1f0dbb5faed5d5abcb0463e0835fe6277081209ba3a3e8c4f5f78cb2cfab60f0e2d833712951bbfcc9a1cf7324d3281254ab83914b6fb9b4a4bd8c52980b",
+            "password": "scrypt:32768:8:1$pEzyQyajK3JnWdSn$691f6f71d715ff5c12dbc9e99db288eb17016a4c7f3bcb6d6c1ff747bd386624507d5b1f52725b44f9dcf4c70539c322dbc5529f98c9f647e68c5f3b1ae458fb",
             "fullname": "Quản Trị Viên Nếp Nhỏ",
             "phone": "0900000000",
             "address": "2, Đường Võ Oanh, Phường Thạnh Mỹ Tây, Quận 9 (Kho Trung Tâm), Hồ Chí Minh",
